@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	authpb "goshop/api/protobuf/auth"
 	loginpb "goshop/api/protobuf/login"
 	"goshop/models"
 	errorcode "goshop/pkg/error"
@@ -95,8 +96,16 @@ func (s *LoginRpcService) LoginUser(ctx context.Context, req *loginpb.ReqLoginUs
 			ErrorCode: errorcode.LoginPasswordError,
 		}, nil
 	}
+	// Delivery Jwt Token.
+	ret, err := AuthClient().DeliverToken(ctx, &authpb.ReqDeliverToken{
+		UserId: uint32(user.ID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &loginpb.RspLoginUser{
 		ErrorCode: errorcode.Ok,
-		UserId:    int32(user.ID),
+		Token: ret.Token,
 	}, nil
 }

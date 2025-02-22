@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	cartpb "goshop/api/protobuf/cart"
+	errorcode "goshop/pkg/error"
 	"goshop/pkg/service"
 	"net/http"
 
@@ -40,11 +41,15 @@ func CartClient() cartpb.CartServiceClient { return cart_client }
 func CartClientClose() { login_conn.Close() }
 
 func handleAddCart(c *gin.Context) {
-	user_id, err := getPostFormInt(c, "user_id")
-	if err != nil {
-		invalidParam(c)
+	user_id, ok := c.Get("user_id")
+	glog.Errorln(ok, user_id)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error_code": errorcode.UnknowError,
+		})
 		return
 	}
+	userId := user_id.(uint32)
 	product_id, err := getPostFormInt(c, "product_id")
 	if err != nil {
 		invalidParam(c)
@@ -57,7 +62,7 @@ func handleAddCart(c *gin.Context) {
 	}
 
 	req := &cartpb.ReqAddItem{
-		UserId: uint32(user_id),
+		UserId: userId,
 		Item: &cartpb.CartItem{
 			ProductId: uint32(product_id),
 			Quantity:  int32(product_cnt),
@@ -74,13 +79,14 @@ func handleAddCart(c *gin.Context) {
 }
 
 func handleCleanCart(c *gin.Context) {
-	user_id, err := getPostFormInt(c, "user_id")
-	if err != nil {
+	user_id, ok := c.Get("user_id")
+	if !ok {
 		invalidParam(c)
 		return
 	}
+	userId := user_id.(uint32)
 	req := &cartpb.ReqCleanCart{
-		UserId: uint32(user_id),
+		UserId: userId,
 	}
 	ret, err := CartClient().CleanCart(context.Background(), req)
 	if err != nil {
@@ -90,13 +96,14 @@ func handleCleanCart(c *gin.Context) {
 }
 
 func handleGetCart(c *gin.Context) {
-	user_id, err := getPostFormInt(c, "user_id")
-	if err != nil {
+	user_id, ok := c.Get("user_id")
+	if !ok {
 		invalidParam(c)
 		return
 	}
+	userId := user_id.(uint32)
 	req := &cartpb.ReqGetCart{
-		UserId: uint32(user_id),
+		UserId: userId,
 	}
 	ret, err := CartClient().GetCart(context.Background(), req)
 	if err != nil {

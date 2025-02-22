@@ -29,19 +29,44 @@ func httpServerStart() bool {
 	return true
 }
 
-func registerRoute(router *gin.Engine) {
-	router.POST("/register", handleRegister)
-	router.POST("/login", handleLogin)
+func registerRoute(r *gin.Engine) {
+	user := r.Group("/user")
+	{
+		user.POST("/register", handleRegister)
+		user.POST("/login", handleLogin)
+	}
 
-	router.POST("/add_product", handleAddProduct)
-	router.POST("/list_products", handleListProducts)
-	router.POST("/get_product", handleGetProduct)
-	router.POST("/search_product", handleSearchProducts)
+	product := r.Group("/product")
+	{
+		product.POST("/add", handleAddProduct)	// TODO: manager
+		product.POST("/list", handleListProducts)
+		product.POST("/get", handleGetProduct)
+		product.POST("/search", handleSearchProducts)
+	}
 
-	router.POST("/get_cart", handleGetCart)
-	router.POST("/add_cart", handleAddCart)
-	router.POST("/clean_cart", handleCleanCart)
+	cart := r.Group("/cart")
+	cart.Use(JwtAuthMiddleware())
+	{
+		cart.POST("/get", handleGetCart)
+		cart.POST("/add", handleAddCart)
+		cart.POST("/clean", handleCleanCart)
+	}
 }
+
+// func registerRoute(router *gin.Engine) {
+// 	// login service
+// 	router.POST("/register", handleRegister)
+// 	router.POST("/login", handleLogin)
+// 	// product service
+// 	router.POST("/add_product", handleAddProduct)
+// 	router.POST("/list_products", handleListProducts)
+// 	router.POST("/get_product", handleGetProduct)
+// 	router.POST("/search_product", handleSearchProducts)
+// 	// cart service
+// 	router.POST("/get_cart", handleGetCart)
+// 	router.POST("/add_cart", handleAddCart)
+// 	router.POST("/clean_cart", handleCleanCart)
+// }
 
 func getPostFormInt(c *gin.Context, key string) (int, error) {
 	val := c.PostForm(key)

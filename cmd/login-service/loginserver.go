@@ -41,6 +41,9 @@ func (s *LoginServer) Init() bool {
 		glog.Errorln("[LoginServer] mysql database init error.")
 		return false
 	}
+
+	rpcClientsStart()
+	
 	// Consul register
 	if !service.ServiceRegister(
 		"1",
@@ -69,6 +72,7 @@ func (s *LoginServer) Final() bool {
 
 func main() {
 	defer func() {
+		AuthClientClose()
 		glog.Flush()
 	}()
 	err := godotenv.Load()

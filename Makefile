@@ -8,7 +8,7 @@ API := $(ROOT)/api/protobuf
 BIN := $(ROOT)/bin
 CMD := $(ROOT)/cmd
 
-SERVICES := gateway-service login-service product-service cart-service
+SERVICES := gateway-service login-service product-service cart-service auth-service
 
 .PHONY: all
 all: build
@@ -76,6 +76,12 @@ cart: $(BIN)/cart-service
 	@echo "Running cart-service..."
 	@nohup $(BIN)/cart-service -log_dir=$(BIN) > /dev/null 2>&1 &
 	@pgrep -f cart-service && echo "cart-service is running" || echo "cart-service failed to start"
+
+.PHONY: auth 
+cart: $(BIN)/auth-service
+	@echo "Running auth-service..."
+	@nohup $(BIN)/auth-service -log_dir=$(BIN) > /dev/null 2>&1 &
+	@pgrep -f auth-service && echo "auth-service is running" || echo "auth-service failed to start"
 
 .PHONY: fmt
 fmt:

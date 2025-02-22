@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/golang/glog"
-)
+import "github.com/golang/glog"
 
 func rpcClientsStart() {
 	runClient := func(clientName string, clientFunc func() bool) {
@@ -10,8 +8,5 @@ func rpcClientsStart() {
 			glog.Errorf("[GatewayServer] %s rpc client start failed\n", clientName)
 		}
 	}
-	go runClient("login", LoginClientStart)
-	go runClient("product", ProductClientStart)
-	go runClient("cart", CartClientStart)
 	go runClient("auth", AuthClientStart)
 }

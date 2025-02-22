@@ -14,5 +14,9 @@ const (
 	// Product Service
 	ProductAlreadyExist ErrorCode = 200
 
+	// Auth Service
+	AuthDeliveryTokenError ErrorCode = 400
+	AuthVerifyTokenError ErrorCode = 400
+
 	UnknowError ErrorCode = 999
 )

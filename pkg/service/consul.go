@@ -49,7 +49,7 @@ func ServiceRegister(id, name, address, port, checkTimeout, checkInterval string
 		glog.Errorln("[Consul] Service register error: ", err.Error())
 		return false
 	}
-	glog.Infoln("[Consul] Service [%s] register [%s, %s] in consul center %s",
+	glog.Infof("[Consul] Service [%s] register [%s, %s] in consul center %s\n",
 		reg.Name, reg.ID, reg.Address+":"+port, consulConf().Address)
 	return true
 }

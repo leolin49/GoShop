@@ -66,7 +66,7 @@ func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*
 	var items []*cartpb.CartItem
 	for _, cart := range carts {
 		items = append(items, &cartpb.CartItem{
-			ProductId: uint32(cart.ID),
+			ProductId: uint32(cart.ProductId),
 			Quantity:  int32(cart.ProductCnt),
 		})
 	}
