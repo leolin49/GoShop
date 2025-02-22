@@ -1,0 +1,45 @@
+syntax = "proto3";
+package product;
+option go_package = "./api/protobuf/cart;cartpb";
+
+service CartService {
+  rpc AddItem(ReqAddItem) returns (RspAddItem) {}
+  rpc CleanCart(ReqCleanCart) returns (RspCleanCart) {}
+  rpc GetCart(ReqGetCart) returns (RspGetCart) {}
+}
+
+message CartItem {
+  uint32 product_id = 1;
+  int32  quantity = 2;
+}
+
+message Cart {
+  uint32 user_id = 1;
+  repeated CartItem items = 2;
+}
+
+message ReqAddItem {
+  uint32 user_id = 1;
+  CartItem item = 2;
+}
+
+message RspAddItem {
+  int32 error_code = 1;
+}
+
+message ReqCleanCart {
+  uint32 user_id = 1;
+}
+
+message RspCleanCart {
+  int32 error_code = 1;
+}
+
+message ReqGetCart {
+  uint32 user_id = 1;
+}
+
+message RspGetCart {
+  int32 error_code = 1;
+  Cart cart = 2; 
+}

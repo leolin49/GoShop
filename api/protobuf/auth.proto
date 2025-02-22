@@ -1,0 +1,24 @@
+syntax = "proto3";
+package auth;
+option go_package = "./api/protobuf/auth;authpb";
+
+service AuthService {
+  rpc DeliverToken(ReqDeliverToken) returns (RspDeliverToken) {}
+  rpc VerifyToken(ReqVerifyToken) returns (RspVerifyToken) {}
+}
+
+message ReqDeliverToken {
+  int32 user_id = 1;
+}
+
+message RspDeliverToken {
+  string token = 1;
+}
+
+message ReqVerifyToken {
+  string token = 1;
+}
+
+message RspVerifyToken {
+  bool res = 1;
+}
