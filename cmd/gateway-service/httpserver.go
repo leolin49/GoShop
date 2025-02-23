@@ -19,7 +19,7 @@ func httpServerStart() bool {
 	registerRoute(router)
 
 	go func() {
-		if err := router.Run("localhost:8080"); err != nil {
+		if err := router.Run("0.0.0.0:8080"); err != nil {
 			glog.Errorln("[Gatewayserver] gin route run failed: ", err.Error())
 			return
 		}
@@ -30,6 +30,12 @@ func httpServerStart() bool {
 }
 
 func registerRoute(r *gin.Engine) {
+	r.GET("/home", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"x": "hello world",
+		})
+	})
+
 	user := r.Group("/user")
 	{
 		user.POST("/register", handleRegister)
@@ -52,21 +58,6 @@ func registerRoute(r *gin.Engine) {
 		cart.POST("/clean", handleCleanCart)
 	}
 }
-
-// func registerRoute(router *gin.Engine) {
-// 	// login service
-// 	router.POST("/register", handleRegister)
-// 	router.POST("/login", handleLogin)
-// 	// product service
-// 	router.POST("/add_product", handleAddProduct)
-// 	router.POST("/list_products", handleListProducts)
-// 	router.POST("/get_product", handleGetProduct)
-// 	router.POST("/search_product", handleSearchProducts)
-// 	// cart service
-// 	router.POST("/get_cart", handleGetCart)
-// 	router.POST("/add_cart", handleAddCart)
-// 	router.POST("/clean_cart", handleCleanCart)
-// }
 
 func getPostFormInt(c *gin.Context, key string) (int, error) {
 	val := c.PostForm(key)

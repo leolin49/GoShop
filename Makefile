@@ -78,7 +78,7 @@ cart: $(BIN)/cart-service
 	@pgrep -f cart-service && echo "cart-service is running" || echo "cart-service failed to start"
 
 .PHONY: auth 
-cart: $(BIN)/auth-service
+auth: $(BIN)/auth-service
 	@echo "Running auth-service..."
 	@nohup $(BIN)/auth-service -log_dir=$(BIN) > /dev/null 2>&1 &
 	@pgrep -f auth-service && echo "auth-service is running" || echo "auth-service failed to start"
