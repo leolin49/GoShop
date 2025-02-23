@@ -30,3 +30,7 @@ cart-service:
 auth-service:
   host: 192.168.1.145
   port: 49300
+
+pay-service:
+  host: 192.168.1.145
+  port: 49400

@@ -17,6 +17,7 @@ type Config struct {
 	AuthCfg    ServiceConfig `yaml:"auth-service"`
 	ProductCfg ServiceConfig `yaml:"product-service"`
 	CartCfg    ServiceConfig `yaml:"cart-service"`
+	PayCfg		ServiceConfig `yaml:"pay-service"`
 }
 
 type MySQLConfig struct {
