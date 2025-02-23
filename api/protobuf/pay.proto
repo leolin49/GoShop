@@ -14,10 +14,10 @@ message CreditCardInfo {
 }
 
 message ReqCharge {
-  float amount = 1;
-  CreditCardInfo card_info = 2;
-  string order_id = 3;
-  uint32 user_id = 4;
+  uint32 user_id = 1;
+  float amount = 2;
+  CreditCardInfo card_info = 3;
+  string order_id = 4;
 }
 
 message RspCharge {

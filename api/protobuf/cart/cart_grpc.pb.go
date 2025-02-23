@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CartService_AddItem_FullMethodName   = "/product.CartService/AddItem"
-	CartService_CleanCart_FullMethodName = "/product.CartService/CleanCart"
-	CartService_GetCart_FullMethodName   = "/product.CartService/GetCart"
+	CartService_AddItem_FullMethodName   = "/cart.CartService/AddItem"
+	CartService_CleanCart_FullMethodName = "/cart.CartService/CleanCart"
+	CartService_GetCart_FullMethodName   = "/cart.CartService/GetCart"
 )
 
 // CartServiceClient is the client API for CartService service.
@@ -176,7 +176,7 @@ func _CartService_GetCart_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CartService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "product.CartService",
+	ServiceName: "cart.CartService",
 	HandlerType: (*CartServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

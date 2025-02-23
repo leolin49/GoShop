@@ -34,3 +34,7 @@ auth-service:
 pay-service:
   host: 192.168.1.145
   port: 49400
+
+checkout-service:
+  host: 192.168.1.145
+  port: 49500

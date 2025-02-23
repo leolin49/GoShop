@@ -1,5 +1,5 @@
 syntax = "proto3";
-package product;
+package cart;
 option go_package = "./api/protobuf/cart;cartpb";
 
 service CartService {

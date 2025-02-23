@@ -8,7 +8,13 @@ API := $(ROOT)/api/protobuf
 BIN := $(ROOT)/bin
 CMD := $(ROOT)/cmd
 
-SERVICES := gateway-service login-service product-service cart-service auth-service
+SERVICES := \
+	gateway-service \
+	login-service \
+	product-service \
+	cart-service \
+	auth-service \
+	pay-service
 
 .PHONY: all
 all: build
@@ -24,7 +30,13 @@ $(BIN)/%: $(CMD)/%
 .PHONY: proto
 proto:
 	@echo "Generating protobuf files..."
-	@$(PROTOC) --proto_path=$(API) --go_out=. --go-grpc_out=. $(API)/*.proto
+	@$(PROTOC) \
+		--proto_path=$(API) \
+		--go_out=$(API) \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=$(API) \
+		--go-grpc_opt=paths=source_relative \
+		$(API)/*.proto
 	@echo "Generating protobuf files successfully." 
 
 .PHONY: clean
