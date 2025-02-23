@@ -26,7 +26,8 @@ message ReqLoginUser {
 
 message RspLoginUser {
   int32 error_code = 1;
-  string token = 2;
+  string access_token = 2;
+  string refresh_token = 3;
 }
 
 message ReqUpdateUser {

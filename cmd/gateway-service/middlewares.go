@@ -22,7 +22,8 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 
 		tokenString := authHeader[len(BearerSchema):]
 		ret, err := AuthClient().VerifyToken(context.Background(), &authpb.ReqVerifyToken{
-			Token: tokenString,
+			Token:    tokenString,
+			IsAccess: true,
 		})
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -36,4 +37,3 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
-

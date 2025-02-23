@@ -97,7 +97,7 @@ func (s *LoginRpcService) LoginUser(ctx context.Context, req *loginpb.ReqLoginUs
 		}, nil
 	}
 	// Delivery Jwt Token.
-	ret, err := AuthClient().DeliverToken(ctx, &authpb.ReqDeliverToken{
+	ret, err := AuthClient().DeliverDoubleToken(ctx, &authpb.ReqDeliverDoubleToken{
 		UserId: uint32(user.ID),
 	})
 	if err != nil {
@@ -105,7 +105,8 @@ func (s *LoginRpcService) LoginUser(ctx context.Context, req *loginpb.ReqLoginUs
 	}
 
 	return &loginpb.RspLoginUser{
-		ErrorCode: errorcode.Ok,
-		Token: ret.Token,
+		ErrorCode:    errorcode.Ok,
+		AccessToken:  ret.AccessToken,
+		RefreshToken: ret.RefreshToken,
 	}, nil
 }

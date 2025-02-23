@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	authpb "goshop/api/protobuf/auth"
+	errorcode "goshop/pkg/error"
 	"goshop/pkg/service"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	auth_client authpb.AuthServiceClient 
+	auth_client authpb.AuthServiceClient
 	auth_conn   *grpc.ClientConn
 )
 
@@ -35,3 +39,31 @@ func AuthClientStart() bool {
 func AuthClient() authpb.AuthServiceClient { return auth_client }
 
 func AuthClientClose() { auth_conn.Close() }
+
+func handleRefreshToken(c *gin.Context) {
+	refreshToken := c.PostForm("refreshToken")
+	if refreshToken == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "missing refreshToken",
+		})
+		return
+	}
+	ret, err := AuthClient().VerifyToken(context.Background(), &authpb.ReqVerifyToken{
+		Token:    refreshToken,
+		IsAccess: false,
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	ret2, err := AuthClient().DeliverDoubleToken(context.Background(), &authpb.ReqDeliverDoubleToken{
+		UserId: ret.UserId,
+	})
+	if err != nil || ret.ErrorCode != errorcode.Ok {
+		rpcRequestError(c)
+		return
+	}
+	c.JSON(http.StatusOK, ret2)
+}

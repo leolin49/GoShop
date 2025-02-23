@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_DeliverToken_FullMethodName = "/auth.AuthService/DeliverToken"
-	AuthService_VerifyToken_FullMethodName  = "/auth.AuthService/VerifyToken"
+	AuthService_DeliverToken_FullMethodName       = "/auth.AuthService/DeliverToken"
+	AuthService_DeliverDoubleToken_FullMethodName = "/auth.AuthService/DeliverDoubleToken"
+	AuthService_VerifyToken_FullMethodName        = "/auth.AuthService/VerifyToken"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	DeliverToken(ctx context.Context, in *ReqDeliverToken, opts ...grpc.CallOption) (*RspDeliverToken, error)
+	DeliverDoubleToken(ctx context.Context, in *ReqDeliverDoubleToken, opts ...grpc.CallOption) (*RspDeliverDoubleToken, error)
 	VerifyToken(ctx context.Context, in *ReqVerifyToken, opts ...grpc.CallOption) (*RspVerifyToken, error)
 }
 
@@ -49,6 +51,16 @@ func (c *authServiceClient) DeliverToken(ctx context.Context, in *ReqDeliverToke
 	return out, nil
 }
 
+func (c *authServiceClient) DeliverDoubleToken(ctx context.Context, in *ReqDeliverDoubleToken, opts ...grpc.CallOption) (*RspDeliverDoubleToken, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RspDeliverDoubleToken)
+	err := c.cc.Invoke(ctx, AuthService_DeliverDoubleToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) VerifyToken(ctx context.Context, in *ReqVerifyToken, opts ...grpc.CallOption) (*RspVerifyToken, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RspVerifyToken)
@@ -64,6 +76,7 @@ func (c *authServiceClient) VerifyToken(ctx context.Context, in *ReqVerifyToken,
 // for forward compatibility.
 type AuthServiceServer interface {
 	DeliverToken(context.Context, *ReqDeliverToken) (*RspDeliverToken, error)
+	DeliverDoubleToken(context.Context, *ReqDeliverDoubleToken) (*RspDeliverDoubleToken, error)
 	VerifyToken(context.Context, *ReqVerifyToken) (*RspVerifyToken, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -77,6 +90,9 @@ type UnimplementedAuthServiceServer struct{}
 
 func (UnimplementedAuthServiceServer) DeliverToken(context.Context, *ReqDeliverToken) (*RspDeliverToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeliverToken not implemented")
+}
+func (UnimplementedAuthServiceServer) DeliverDoubleToken(context.Context, *ReqDeliverDoubleToken) (*RspDeliverDoubleToken, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeliverDoubleToken not implemented")
 }
 func (UnimplementedAuthServiceServer) VerifyToken(context.Context, *ReqVerifyToken) (*RspVerifyToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
@@ -120,6 +136,24 @@ func _AuthService_DeliverToken_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_DeliverDoubleToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqDeliverDoubleToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeliverDoubleToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_DeliverDoubleToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeliverDoubleToken(ctx, req.(*ReqDeliverDoubleToken))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReqVerifyToken)
 	if err := dec(in); err != nil {
@@ -148,6 +182,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeliverToken",
 			Handler:    _AuthService_DeliverToken_Handler,
+		},
+		{
+			MethodName: "DeliverDoubleToken",
+			Handler:    _AuthService_DeliverDoubleToken_Handler,
 		},
 		{
 			MethodName: "VerifyToken",

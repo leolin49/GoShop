@@ -4,6 +4,7 @@ option go_package = "./api/protobuf/auth;authpb";
 
 service AuthService {
   rpc DeliverToken(ReqDeliverToken) returns (RspDeliverToken) {}
+  rpc DeliverDoubleToken(ReqDeliverDoubleToken) returns (RspDeliverDoubleToken) {}
   rpc VerifyToken(ReqVerifyToken) returns (RspVerifyToken) {}
 }
 
@@ -16,8 +17,19 @@ message RspDeliverToken {
   string token = 2;
 }
 
+message ReqDeliverDoubleToken {
+  uint32 user_id = 1;
+}
+
+message RspDeliverDoubleToken {
+  int32 error_code = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
 message ReqVerifyToken {
   string token = 1;
+  bool  is_access = 2;
 }
 
 message RspVerifyToken {

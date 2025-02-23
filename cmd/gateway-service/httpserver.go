@@ -44,7 +44,7 @@ func registerRoute(r *gin.Engine) {
 
 	product := r.Group("/product")
 	{
-		product.POST("/add", handleAddProduct)	// TODO: manager
+		product.POST("/add", handleAddProduct) // TODO: manager
 		product.POST("/list", handleListProducts)
 		product.POST("/get", handleGetProduct)
 		product.POST("/search", handleSearchProducts)
@@ -57,6 +57,8 @@ func registerRoute(r *gin.Engine) {
 		cart.POST("/add", handleAddCart)
 		cart.POST("/clean", handleCleanCart)
 	}
+
+	r.POST("/refreshToken", handleRefreshToken)
 }
 
 func getPostFormInt(c *gin.Context, key string) (int, error) {

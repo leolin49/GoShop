@@ -14,7 +14,7 @@ type Config struct {
 	ConsulCfg  ConsulConfig  `yaml:"consul"`
 	GatewayCfg ServiceConfig `yaml:"gateway-service"`
 	LoginCfg   ServiceConfig `yaml:"login-service"`
-	AuthCfg   ServiceConfig `yaml:"auth-service"`
+	AuthCfg    ServiceConfig `yaml:"auth-service"`
 	ProductCfg ServiceConfig `yaml:"product-service"`
 	CartCfg    ServiceConfig `yaml:"cart-service"`
 }

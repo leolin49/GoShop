@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	auth_client authpb.AuthServiceClient 
+	auth_client authpb.AuthServiceClient
 	auth_conn   *grpc.ClientConn
 )
 

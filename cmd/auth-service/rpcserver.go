@@ -33,25 +33,33 @@ func rpcServerStart() bool {
 	return true
 }
 
-func (s *AuthRpcService) DeliverToken(ctx context.Context, req *authpb.ReqDeliverToken) (*authpb.RspDeliverToken, error) {
-	tokenString, err := util.JwtGenerateToken(req.UserId)
+func (s *AuthRpcService) DeliverDoubleToken(ctx context.Context, req *authpb.ReqDeliverDoubleToken) (*authpb.RspDeliverDoubleToken, error) {
+	accessToken, refreshToken, err := util.JwtDoubleToken(req.UserId, 5*60, 1*24*60*60)
 	if err != nil {
 		return nil, err
 	}
-	return &authpb.RspDeliverToken{
-		ErrorCode: errorcode.Ok,
-		Token: tokenString,
+	return &authpb.RspDeliverDoubleToken{
+		ErrorCode:    errorcode.Ok,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}, nil
 }
 
 func (s *AuthRpcService) VerifyToken(ctx context.Context, req *authpb.ReqVerifyToken) (*authpb.RspVerifyToken, error) {
-	userId, err := util.JwtExtractTokenUserId(req.Token)
+	var (
+		userId uint32
+		err    error
+	)
+	if req.IsAccess {
+		userId, err = util.JwtExtractAccessTokenUserId(req.Token)
+	} else {
+		userId, err = util.JwtExtractRefreshTokenUserId(req.Token)
+	}
 	if err != nil {
 		return nil, err
 	}
 	return &authpb.RspVerifyToken{
 		ErrorCode: errorcode.Ok,
-		UserId: userId,
+		UserId:    userId,
 	}, nil
 }
-

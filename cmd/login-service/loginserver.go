@@ -43,7 +43,7 @@ func (s *LoginServer) Init() bool {
 	}
 
 	rpcClientsStart()
-	
+
 	// Consul register
 	if !service.ServiceRegister(
 		"1",
