@@ -34,7 +34,7 @@ func rpcServerStart() bool {
 }
 
 func (s *AuthRpcService) DeliverDoubleToken(ctx context.Context, req *authpb.ReqDeliverDoubleToken) (*authpb.RspDeliverDoubleToken, error) {
-	accessToken, refreshToken, err := util.JwtDoubleToken(req.UserId, 5*60, 1*24*60*60)
+	accessToken, refreshToken, err := util.JwtDoubleToken(req.UserId, 30*60, 1*24*60*60)
 	if err != nil {
 		return nil, err
 	}

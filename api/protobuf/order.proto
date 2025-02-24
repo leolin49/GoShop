@@ -38,7 +38,7 @@ message OrderResult {
 }
 
 message ReqPlaceOrder {
-  string token = 1;
+  uint32 user_id = 1;
   string user_currency = 2;
 
   Address address = 3;
@@ -51,7 +51,7 @@ message RspPlaceOrder {
 }
 
 message ReqListOrder {
-  string token = 1;
+  uint32 user_id = 1;
 }
 
 message RspListOrder {

@@ -58,6 +58,12 @@ func registerRoute(r *gin.Engine) {
 		cart.POST("/clean", handleCleanCart)
 	}
 
+	checkout := r.Group("/checkout")
+	checkout.Use(JwtAuthMiddleware())
+	{
+		checkout.POST("/checkout", handleCheckout)
+	}
+
 	r.POST("/refreshToken", handleRefreshToken)
 }
 

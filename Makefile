@@ -9,12 +9,14 @@ BIN := $(ROOT)/bin
 CMD := $(ROOT)/cmd
 
 SERVICES := \
-	gateway-service \
 	login-service \
 	product-service \
 	cart-service \
 	auth-service \
-	pay-service
+	pay-service \
+	checkout-service \
+	order-service \
+	gateway-service
 
 .PHONY: all
 all: build

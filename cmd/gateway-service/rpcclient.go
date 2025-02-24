@@ -14,4 +14,13 @@ func rpcClientsStart() {
 	go runClient("product", ProductClientStart)
 	go runClient("cart", CartClientStart)
 	go runClient("auth", AuthClientStart)
+	go runClient("checkout", CheckoutClientStart)
+}
+
+func rpcClientsClose() {
+	LoginClientClose()
+	ProductClient()
+	CartClientClose()
+	AuthClientClose()
+	CheckoutClient()
 }

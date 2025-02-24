@@ -37,7 +37,7 @@ func (s *CheckoutServer) Init() bool {
 		glog.Errorln("[CheckoutServer] rpc server start error.")
 		return false
 	}
-	rpcClientStart()
+	rpcClientsStart()
 	if !mysqlDatabaseInit() {
 		glog.Errorln("[CheckoutServer] mysql database init error.")
 		return false
@@ -70,6 +70,7 @@ func (s *CheckoutServer) Final() bool {
 
 func main() {
 	defer func() {
+		rpcClientClose()
 		glog.Flush()
 	}()
 	err := godotenv.Load()

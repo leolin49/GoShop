@@ -53,8 +53,8 @@ func (s *GatewayServer) Final() bool {
 
 func main() {
 	defer func() {
+		rpcClientsClose()
 		glog.Flush()
-		LoginClientClose()
 	}()
 	flag.Set("v", "2")
 	flag.Parse()
