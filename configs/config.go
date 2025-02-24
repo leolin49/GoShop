@@ -10,16 +10,16 @@ import (
 var cfg *Config
 
 type Config struct {
-	MysqlCfg   MySQLConfig   `yaml:"mysql"`
-	ConsulCfg  ConsulConfig  `yaml:"consul"`
-	GatewayCfg ServiceConfig `yaml:"gateway-service"`
-	LoginCfg   ServiceConfig `yaml:"login-service"`
-	AuthCfg    ServiceConfig `yaml:"auth-service"`
-	ProductCfg ServiceConfig `yaml:"product-service"`
-	CartCfg    ServiceConfig `yaml:"cart-service"`
-	PayCfg		ServiceConfig `yaml:"pay-service"`
-	CheckoutCfg	ServiceConfig `yaml:"checkout-service"`
-	OrderCfg	ServiceConfig `yaml:"order-service"`
+	MysqlCfg    MySQLConfig   `yaml:"mysql"`
+	ConsulCfg   ConsulConfig  `yaml:"consul"`
+	GatewayCfg  ServiceConfig `yaml:"gateway-service"`
+	LoginCfg    ServiceConfig `yaml:"login-service"`
+	AuthCfg     ServiceConfig `yaml:"auth-service"`
+	ProductCfg  ServiceConfig `yaml:"product-service"`
+	CartCfg     ServiceConfig `yaml:"cart-service"`
+	PayCfg      ServiceConfig `yaml:"pay-service"`
+	CheckoutCfg ServiceConfig `yaml:"checkout-service"`
+	OrderCfg    ServiceConfig `yaml:"order-service"`
 }
 
 type MySQLConfig struct {

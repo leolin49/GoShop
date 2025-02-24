@@ -8,11 +8,11 @@ import (
 
 type PaymentLog struct {
 	gorm.Model
-	UserId	uint32
-	OrderId string
+	UserId        uint32
+	OrderId       string
 	TransactionId string
-	Amount	float32
-	PayAt	time.Time
+	Amount        float32
+	PayAt         time.Time
 }
 
 func (p PaymentLog) TableName() string {

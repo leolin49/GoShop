@@ -49,14 +49,14 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 	}
 
 	var (
-		total float32
+		total      float32
 		orderItems []*orderpb.OrderItem
-		orderId string
+		orderId    string
 	)
 
 	for _, item := range cartRet.Cart.Items {
 		productRet, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
-			Id: item.ProductId,	
+			Id: item.ProductId,
 		})
 		if err != nil {
 			glog.Errorln("[CheckoutServer] get product error:", err.Error())
@@ -69,13 +69,13 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 
 		price := productRet.Product.Price
 		cost := price * float32(item.Quantity)
-		
+
 		total += cost
 
 		orderItems = append(orderItems, &orderpb.OrderItem{
 			Item: &cartpb.CartItem{
 				ProductId: item.ProductId,
-				Quantity: item.Quantity,
+				Quantity:  item.Quantity,
 			},
 			Cost: cost,
 		})
@@ -84,13 +84,13 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 	// create the order.
 	orderRet, err := OrderClient().PlaceOrder(ctx, &orderpb.ReqPlaceOrder{
 		UserId: req.UserId,
-		Email: req.Email,
+		Email:  req.Email,
 		Address: &orderpb.Address{
-			Country: req.Address.Country,
-			State: req.Address.State,
-			City: req.Address.City,
+			Country:       req.Address.Country,
+			State:         req.Address.State,
+			City:          req.Address.City,
 			StreetAddress: req.Address.StreetAddress,
-			ZipCode: req.Address.ZipCode,
+			ZipCode:       req.Address.ZipCode,
 		},
 		OrderItems: orderItems,
 	})
@@ -109,14 +109,14 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 	orderId = u.String()
 
 	payReq := &paypb.ReqCharge{
-		UserId: req.UserId,
+		UserId:  req.UserId,
 		OrderId: orderId,
-		Amount: total,
+		Amount:  total,
 		CardInfo: &paypb.CreditCardInfo{
-			CreditCardNumber: req.CardInfo.CreditCardNumber,
-			CreditCardCvv: req.CardInfo.CreditCardCvv,
+			CreditCardNumber:          req.CardInfo.CreditCardNumber,
+			CreditCardCvv:             req.CardInfo.CreditCardCvv,
 			CreditCardExpirationMonth: req.CardInfo.CreditCardExpirationMonth,
-			CreditCardExpirationYear: req.CardInfo.CreditCardExpirationYear,
+			CreditCardExpirationYear:  req.CardInfo.CreditCardExpirationYear,
 		},
 	}
 	// clean cart.
@@ -136,9 +136,7 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 	glog.Infof("[Checkoutserver] %v checkout success\n", req.UserId)
 
 	return &checkoutpb.RspCheckout{
-		OrderId: orderId,
+		OrderId:       orderId,
 		TransactionId: payRet.TransactionId,
 	}, nil
 }
-
-

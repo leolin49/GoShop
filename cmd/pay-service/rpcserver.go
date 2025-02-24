@@ -15,7 +15,7 @@ import (
 )
 
 type PayRpcService struct {
-	paypb.UnimplementedPayServiceServer	
+	paypb.UnimplementedPayServiceServer
 }
 
 func rpcServerStart() bool {
@@ -39,9 +39,9 @@ func rpcServerStart() bool {
 func (s *PayRpcService) Charge(ctx context.Context, req *paypb.ReqCharge) (*paypb.RspCharge, error) {
 	card := creditcard.Card{
 		Number: req.CardInfo.CreditCardNumber,
-		Cvv: strconv.Itoa(int(req.CardInfo.CreditCardCvv)),
-		Month: strconv.Itoa(int(req.CardInfo.CreditCardExpirationMonth)),
-		Year: strconv.Itoa(int(req.CardInfo.CreditCardExpirationYear)),
+		Cvv:    strconv.Itoa(int(req.CardInfo.CreditCardCvv)),
+		Month:  strconv.Itoa(int(req.CardInfo.CreditCardExpirationMonth)),
+		Year:   strconv.Itoa(int(req.CardInfo.CreditCardExpirationYear)),
 	}
 
 	err := card.Validate(true)
@@ -54,11 +54,11 @@ func (s *PayRpcService) Charge(ctx context.Context, req *paypb.ReqCharge) (*payp
 	}
 
 	err = models.NewPaymentLogQuery(Mysql()).CreatePaymentLog(&models.PaymentLog{
-		UserId: req.UserId,
-		OrderId: req.OrderId,
+		UserId:        req.UserId,
+		OrderId:       req.OrderId,
 		TransactionId: transactionId.String(),
-		Amount: req.Amount,
-		PayAt: time.Now(),
+		Amount:        req.Amount,
+		PayAt:         time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -67,4 +67,3 @@ func (s *PayRpcService) Charge(ctx context.Context, req *paypb.ReqCharge) (*payp
 		TransactionId: transactionId.String(),
 	}, nil
 }
-

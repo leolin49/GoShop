@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	order_client orderpb.OrderServiceClient 
+	order_client orderpb.OrderServiceClient
 	order_conn   *grpc.ClientConn
 )
 
@@ -35,4 +35,3 @@ func OrderClientStart() bool {
 func OrderClient() orderpb.OrderServiceClient { return order_client }
 
 func OrderClientClose() { order_conn.Close() }
-

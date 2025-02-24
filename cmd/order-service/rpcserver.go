@@ -45,9 +45,9 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 	err = Mysql().Transaction(func(tx *gorm.DB) error {
 		orderId, _ := uuid.NewUUID()
 
-		order := &models.Order {
-			OrderId: orderId.String(),
-			UserId: req.UserId,
+		order := &models.Order{
+			OrderId:      orderId.String(),
+			UserId:       req.UserId,
 			UserCurrency: req.UserCurrency,
 			Consignee: models.Consignee{
 				Email: req.Email,
@@ -69,9 +69,9 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 		for _, v := range req.OrderItems {
 			items = append(items, &models.OrderItem{
 				OrderIdRefer: order.OrderId,
-				ProductId: v.Item.ProductId,
-				Quantity: uint32(v.Item.Quantity),
-				Cost: v.Cost,
+				ProductId:    v.Item.ProductId,
+				Quantity:     uint32(v.Item.Quantity),
+				Cost:         v.Cost,
 			})
 		}
 		if err := tx.Create(&items).Error; err != nil {
@@ -82,7 +82,7 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 		ret = &orderpb.RspPlaceOrder{
 			OrderResult: &orderpb.OrderResult{
 				OrderId: orderId.String(),
-			},	
+			},
 		}
 
 		return nil
@@ -104,31 +104,27 @@ func (s *OrderRpcService) ListOrder(ctx context.Context, req *orderpb.ReqListOrd
 			items = append(items, &orderpb.OrderItem{
 				Item: &cartpb.CartItem{
 					ProductId: oi.ProductId,
-					Quantity: int32(oi.Quantity),
+					Quantity:  int32(oi.Quantity),
 				},
 				Cost: oi.Cost,
 			})
 		}
 		orders = append(orders, &orderpb.Order{
-			OrderId: v.OrderId,
-			UserId: v.UserId,
+			OrderId:      v.OrderId,
+			UserId:       v.UserId,
 			UserCurrency: v.UserCurrency,
-			Email: v.Consignee.Email,
+			Email:        v.Consignee.Email,
 			Address: &orderpb.Address{
-				Country: v.Consignee.Country,
-				State: v.Consignee.State,
-				City: v.Consignee.City,
+				Country:       v.Consignee.Country,
+				State:         v.Consignee.State,
+				City:          v.Consignee.City,
 				StreetAddress: v.Consignee.StreetAddress,
-				ZipCode: v.Consignee.ZipCode,
+				ZipCode:       v.Consignee.ZipCode,
 			},
 			OrderItems: items,
-		})	
+		})
 	}
 	return &orderpb.RspListOrder{
 		Orders: orders,
 	}, nil
 }
-
-
-
-

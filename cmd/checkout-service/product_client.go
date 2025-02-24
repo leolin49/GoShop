@@ -35,4 +35,3 @@ func ProductClientStart() bool {
 func ProductClient() productpb.ProductServiceClient { return product_client }
 
 func ProductClientClose() { product_conn.Close() }
-

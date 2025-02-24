@@ -35,4 +35,3 @@ func PayClientStart() bool {
 func PayClient() paypb.PayServiceClient { return pay_client }
 
 func PayClientClose() { pay_conn.Close() }
-

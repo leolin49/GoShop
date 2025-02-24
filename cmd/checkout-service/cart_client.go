@@ -35,4 +35,3 @@ func CartClientStart() bool {
 func CartClient() cartpb.CartServiceClient { return cart_client }
 
 func CartClientClose() { cart_conn.Close() }
-
