@@ -1,6 +1,7 @@
 syntax = "proto3";
 package cart;
-option go_package = "./api/protobuf/cart;cartpb";
+
+option go_package = "goshop/api/protobuf/cart;cartpb";
 
 service CartService {
   rpc AddItem(ReqAddItem) returns (RspAddItem) {}

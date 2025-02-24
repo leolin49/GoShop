@@ -2,7 +2,7 @@ syntax = "proto3";
 package order;
 
 import "cart.proto";
-option go_package = "./api/protobuf/order;orderpb";
+option go_package = "goshop/api/protobuf/order;orderpb";
 
 service OrderService {
   rpc PlaceOrder(ReqPlaceOrder) returns (RspPlaceOrder) {}

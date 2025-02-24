@@ -2,7 +2,7 @@ syntax = "proto3";
 package checkout;
 
 import "pay.proto";
-option go_package = "./api/protobuf/checkout;checkoutpb";
+option go_package = "goshop/api/protobuf/checkout;checkoutpb";
 
 service CheckoutService {
   rpc Checkout(ReqCheckout) returns (RspCheckout) {}

@@ -32,10 +32,8 @@ proto:
 	@echo "Generating protobuf files..."
 	@$(PROTOC) \
 		--proto_path=$(API) \
-		--go_out=$(API) \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=$(API) \
-		--go-grpc_opt=paths=source_relative \
+		--go_out=.. \
+		--go-grpc_out=.. \
 		$(API)/*.proto
 	@echo "Generating protobuf files successfully." 
 
