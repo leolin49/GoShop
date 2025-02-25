@@ -51,7 +51,7 @@ run: $(addprefix $(BIN)/,$(SERVICES))
 	$(foreach service,$(SERVICES), \
 		nohup $(BIN)/$(service) -log_dir=$(BIN) > /dev/null 2>&1 & \
 		pgrep -f $(service) && echo "$(service) is running" || echo "$(service) failed to start"; \
-		sleep 2; \
+		sleep 0.5; \
 	)
 	@echo "Listed services are running:"
 	@ps -a | grep service
@@ -97,6 +97,12 @@ auth: $(BIN)/auth-service
 	@echo "Running auth-service..."
 	@nohup $(BIN)/auth-service -log_dir=$(BIN) > /dev/null 2>&1 &
 	@pgrep -f auth-service && echo "auth-service is running" || echo "auth-service failed to start"
+
+.PHONY: checkout 
+checkout: $(BIN)/checkout-service
+	@echo "Running checkout-service..."
+	@nohup $(BIN)/checkout-service -log_dir=$(BIN) > /dev/null 2>&1 &
+	@pgrep -f checkout-service && echo "checkout-service is running" || echo "checkout-service failed to start"
 
 .PHONY: fmt
 fmt:

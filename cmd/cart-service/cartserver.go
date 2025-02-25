@@ -17,12 +17,12 @@ import (
 
 type CartServer struct {
 	service.Service
-	db *gorm.DB
-	rdb *redis.Rdb
 }
 
 var (
 	server *CartServer
+	db     *gorm.DB
+	rdb    *redis.Rdb
 	once   sync.Once
 )
 
@@ -47,18 +47,20 @@ func (s *CartServer) Init() bool {
 	}
 
 	// MySQL connect
-	if s.db, err = mysql.DatabaseInit(&configs.GetConf().MysqlCfg); err != nil {
+	if db, err = mysql.DatabaseInit(&configs.GetConf().MysqlCfg); err != nil {
 		glog.Errorln("[CartServer] mysql database init error.")
 		return false
 	}
 	// MySQL table migrate
-	s.db.AutoMigrate(&models.Cart{})
+	db.AutoMigrate(&models.Cart{})
 
 	// Redis connect
-	if s.rdb, err = redis.NewRedisClient(&configs.GetConf().RedisCfg); err != nil {
+	glog.Info(configs.GetConf().RedisCfg)
+	if rdb, err = redis.NewRedisClient(&configs.GetConf().RedisCfg); err != nil {
 		glog.Errorln("[CartServer] redis database init error.")
 		return false
 	}
+	glog.Infof("[CartServer] redis database [%s] init success.\n", configs.GetConf().GetRedisAddr())
 
 	// Consul register
 	if !service.ServiceRegister(
@@ -75,16 +77,11 @@ func (s *CartServer) Init() bool {
 	return true
 }
 
-func (s *CartServer) Reload() {
-}
+func (s *CartServer) Reload() {}
 
-func (s *CartServer) MainLoop() {
-	time.Sleep(time.Second)
-}
+func (s *CartServer) MainLoop() { time.Sleep(time.Second) }
 
-func (s *CartServer) Final() bool {
-	return true
-}
+func (s *CartServer) Final() bool { return true }
 
 func main() {
 	defer func() {

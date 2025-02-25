@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"google.golang.org/protobuf/proto"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"google.golang.org/protobuf/proto"
 )
 
 const (

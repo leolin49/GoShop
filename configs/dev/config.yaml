@@ -20,7 +20,7 @@ rabbitmq: # docker
   port: 5672
 
 redis: # docker
-  host: 127.0.0.1
+  host: "127.0.0.1"
   port: 6379
   network: "tcp"
   username: ""

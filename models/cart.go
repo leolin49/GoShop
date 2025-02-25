@@ -19,7 +19,7 @@ func (c Cart) TableName() string {
 }
 
 type CartQuery struct {
-	db *gorm.DB
+	db  *gorm.DB
 	rdb *redis.Rdb
 }
 

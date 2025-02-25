@@ -62,7 +62,7 @@ func handleRefreshToken(c *gin.Context) {
 		UserId: ret.UserId,
 	})
 	if err != nil || ret.ErrorCode != errorcode.Ok {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, ret2)

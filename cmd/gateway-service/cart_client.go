@@ -89,7 +89,7 @@ func handleCleanCart(c *gin.Context) {
 	}
 	ret, err := CartClient().CleanCart(context.Background(), req)
 	if err != nil {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 	}
 	c.JSON(http.StatusOK, ret)
 }
@@ -106,7 +106,7 @@ func handleGetCart(c *gin.Context) {
 	}
 	ret, err := CartClient().GetCart(context.Background(), req)
 	if err != nil {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 	}
 	c.JSON(http.StatusOK, ret)
 }

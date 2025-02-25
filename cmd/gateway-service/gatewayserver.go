@@ -18,7 +18,7 @@ type GatewayServer struct {
 
 var (
 	server *GatewayServer
-	once sync.Once
+	once   sync.Once
 )
 
 func GatewayServerGetInstance() *GatewayServer {

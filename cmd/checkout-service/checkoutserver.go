@@ -14,10 +14,10 @@ import (
 
 type CheckoutServer struct {
 	service.Service
-	rdb	*redis.Rdb
 }
 
 var (
+	rdb    *redis.Rdb
 	server *CheckoutServer
 	once   sync.Once
 )
@@ -31,6 +31,7 @@ func CheckoutServerGetInstance() *CheckoutServer {
 }
 
 func (s *CheckoutServer) Init() bool {
+	var err error
 	if !configs.ParseConfig() {
 		glog.Errorln("[CheckoutServer] parse config error.")
 		return false
@@ -47,7 +48,10 @@ func (s *CheckoutServer) Init() bool {
 	}
 
 	// redis
-	s.rdb = redis.NewRedisClient(&configs.GetConf().RedisCfg)
+	if rdb, err = redis.NewRedisClient(&configs.GetConf().RedisCfg); err != nil {
+		glog.Errorln("[CheckoutServer] redis database init error: ", err.Error())
+		return false
+	}
 
 	// rpc clients
 	rpcClientsStart()

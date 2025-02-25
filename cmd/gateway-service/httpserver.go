@@ -81,8 +81,8 @@ func invalidParam(c *gin.Context) {
 	})
 }
 
-func rpcRequestError(c *gin.Context) {
+func rpcRequestError(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, gin.H{
-		"error_code": errorcode.RpcRequestFailed,
+		"error": err.Error(),
 	})
 }

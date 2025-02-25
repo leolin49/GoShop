@@ -22,17 +22,17 @@ type Config struct {
 	CheckoutCfg ServiceConfig  `yaml:"checkout-service"`
 	OrderCfg    ServiceConfig  `yaml:"order-service"`
 	RabbitMqCfg RabbitMQConfig `yaml:"rabbitmq"`
-	RedisCfg	RedisConfig	   `yaml:"redis"`
+	RedisCfg    RedisConfig    `yaml:"redis"`
 }
 
 type MySQLConfig struct {
-	DSNFormat	string `yaml:"dsnformat"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	DataBase string `yaml:"database"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Charset  string `yaml:"charset"`
+	DSNFormat string `yaml:"dsnformat"`
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+	DataBase  string `yaml:"database"`
+	Host      string `yaml:"host"`
+	Port      int    `yaml:"port"`
+	Charset   string `yaml:"charset"`
 }
 
 type ConsulConfig struct {
@@ -42,19 +42,21 @@ type ConsulConfig struct {
 }
 
 type RabbitMQConfig struct {
+	Host      string `yaml:"host"`
+	Port      string `yaml:"port"`
 	UrlFormat string `yaml:"urlformat"`
 	Username  string `yaml:"username"`
 	Password  string `yaml:"password"`
-	ServiceConfig
 }
 
 type RedisConfig struct {
-	ServiceConfig
-	Username  string `yaml:"username"`
-	Password  string `yaml:"password"`
-	Network	  string `yaml:"network"`
-	Db		  int	 `yaml:"db"`
-	Protocol  int	 `yaml:"protocol"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Network  string `yaml:"network"`
+	Db       int    `yaml:"db"`
+	Protocol int    `yaml:"protocol"`
 }
 
 type ServiceConfig struct {
@@ -79,6 +81,10 @@ func ParseConfig() bool {
 }
 
 func GetConf() *Config { return cfg }
+
+func (c *Config) GetRedisAddr() string {
+	return fmt.Sprintf("%s:%s", c.RedisCfg.Host, c.RedisCfg.Port)
+}
 
 func (c *Config) GetRabbitMQUrl() string {
 	return fmt.Sprintf(c.RabbitMqCfg.UrlFormat,

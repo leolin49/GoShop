@@ -65,6 +65,18 @@ start_rabbitmq() {
 	rabbitmq:management
 }
 
+start_redis() {
+    echo "Stopping and removing existing Redis container..."
+    docker stop redis 
+    docker rm redis 
+    sleep 1
+	
+    echo "Starting Redis container..."
+	docker run -itd --name redis \
+		-p 6379:6379 \
+		redis
+}
+
 case "$1" in
     consul)
         start_consul
@@ -78,13 +90,16 @@ case "$1" in
 	rabbitmq)
 		start_rabbitmq
 		;;
+	redis)
+		start_redis
+		;;
     all)
         start_consul
         start_mysql
         start_nginx
         ;;
     *)
-        echo "Usage: $0 {consul|mysql|nginx|rabbitmq|all}"
+        echo "Usage: $0 {consul|mysql|nginx|rabbitmq|redis|all}"
         exit 1
         ;;
 esac

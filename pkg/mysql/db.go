@@ -38,4 +38,3 @@ func DatabaseInit(cfg *configs.MySQLConfig) (db *gorm.DB, err error) {
 
 	return dbconn, err
 }
-

@@ -62,7 +62,7 @@ func handleAddProduct(c *gin.Context) {
 	}
 	ret, err := ProductClient().AddProduct(context.Background(), req)
 	if err != nil {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -89,7 +89,7 @@ func handleListProducts(c *gin.Context) {
 	}
 	response, err := ProductClient().ListProducts(context.Background(), req)
 	if err != nil {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -103,7 +103,7 @@ func handleSearchProducts(c *gin.Context) {
 		Query: query,
 	})
 	if err != nil {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -117,7 +117,7 @@ func handleGetProduct(c *gin.Context) {
 		Id: uint32(id),
 	})
 	if err != nil {
-		rpcRequestError(c)
+		rpcRequestError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

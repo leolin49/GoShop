@@ -11,7 +11,6 @@ import (
 	"net"
 
 	"github.com/golang/glog"
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -101,12 +100,6 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 	if orderRet != nil && orderRet.OrderResult != nil {
 		orderId = orderRet.OrderResult.OrderId
 	}
-
-	u, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
-	orderId = u.String()
 
 	payReq := &paypb.ReqCharge{
 		UserId:  req.UserId,

@@ -39,7 +39,7 @@ func (s *LoginServer) Init() bool {
 		glog.Errorln("[LoginServer] parse config error.")
 		return false
 	}
-	// Rpc server 
+	// Rpc server
 	if !rpcServerStart() {
 		glog.Errorln("[LoginServer] rpc server start error.")
 		return false

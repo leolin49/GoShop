@@ -35,12 +35,17 @@ func rpcServerStart() bool {
 }
 
 func (s *CartRpcService) AddItem(ctx context.Context, req *cartpb.ReqAddItem) (*cartpb.RspAddItem, error) {
+	defer func() { // NOTE: delete the redis cache in the end.
+		if err := rdb.Del(fmt.Sprintf("cart:%d", req.UserId)); err != nil {
+			glog.Errorln("[CartServer] delete redis cache failed: ", err.Error())
+		}
+	}()
 	cart := &models.Cart{
 		UserId:     uint64(req.UserId),
 		ProductId:  uint64(req.Item.ProductId),
 		ProductCnt: uint64(req.Item.Quantity),
 	}
-	err := models.NewCartQuery(Mysql()).AddProduct(cart)
+	err := models.NewCartQuery(db).AddProduct(cart)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +55,12 @@ func (s *CartRpcService) AddItem(ctx context.Context, req *cartpb.ReqAddItem) (*
 }
 
 func (s *CartRpcService) CleanCart(ctx context.Context, req *cartpb.ReqCleanCart) (*cartpb.RspCleanCart, error) {
-	err := models.NewCartQuery(Mysql()).CleanByUserId(req.UserId)
+	defer func() {
+		if err := rdb.Del(fmt.Sprintf("cart:%d", req.UserId)); err != nil {
+			glog.Errorln("[CartServer] delete redis cache failed: ", err.Error())
+		}
+	}()
+	err := models.NewCartQuery(db).CleanByUserId(req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,23 +69,9 @@ func (s *CartRpcService) CleanCart(ctx context.Context, req *cartpb.ReqCleanCart
 	}, nil
 }
 
-// func Helper(ctx context.Context, rdb *redis.Rdb, prefix string, req interface{}, handlerFunc func()) (interface{}, error) {
-// 	key := fmt.Sprintf("%s:%d", prefix, req.UserId)
-// 	ret := reflect.New(reflect.TypeOf(req))
-// 	cache, err := rdb.GetProto(key, ret.Interface().(proto.Message))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if cache {
-// 		return ret, nil
-// 	}
-// 	return ret, nil
-// }
-
 func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*cartpb.RspGetCart, error) {
 	// redis cache
-	rdb := CartServerGetInstance().rdb
-	key := fmt.Sprintf("card:%d", req.UserId)
+	key := fmt.Sprintf("cart:%d", req.UserId)
 	var ret cartpb.RspGetCart
 	cache, err := rdb.GetProto(key, &ret)
 	if err != nil {
@@ -85,7 +81,6 @@ func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*
 		return &ret, nil
 	}
 
-	db := CartServerGetInstance().db
 	carts, err := models.NewCartQuery(db).GetByUserId(req.UserId)
 	if err != nil {
 		return nil, err
@@ -126,7 +121,7 @@ func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*
 // 		ret := &cartpb.RspGetCart{}
 // 		if err = util.Deserialize([]byte(data), ret); err == nil {
 // 			return ret, nil
-// 		} 	
+// 		}
 // 	}
 // 	ret, err := handler(ctx, req)
 // 	if err != nil {
@@ -144,3 +139,25 @@ func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*
 // 	return ret, nil
 // }
 
+// NOTE
+// type RpcFunc[T any] func(ctx context.Context, req any) (*T, error)
+
+// func WithCache[T any](rdb *redis.Rdb, key string, f RpcFunc[T]) RpcFunc[T] {
+// 	return func(ctx context.Context, req any) (*T, error) {
+// 		k := key
+// 		var ret T
+// 		if cache, err := rdb.GetProto(k, &ret); err == nil && cache {
+// 			return &ret, nil
+// 		} else {
+// 			return nil, err
+// 		}
+// 		res, err := RpcFunc(ctx, req)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		if err = rdb.SetProto(key, &res); err != nil {
+// 			glog.Errorln("[CartServer] cache write error: ", err.Error())
+// 		}
+// 		return res, nil
+// 	}
+// }

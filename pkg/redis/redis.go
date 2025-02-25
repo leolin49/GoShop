@@ -11,18 +11,20 @@ import (
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
 )
+
 type Rdb struct {
 	ctx context.Context
-	db *redis.Client
+	db  *redis.Client
 }
 
 func NewRedisClient(cfg *configs.RedisConfig) (*Rdb, error) {
 	rdb := &Rdb{
-		db:	redis.NewClient(&redis.Options{
-			Addr:	fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-			Password: cfg.Password,	// no password set
-			DB: cfg.Db,	// use default DB
-			Protocol: cfg.Protocol,	// specify 2 for RESP 2, or 3 for RESP 3.
+		ctx: context.Background(),
+		db: redis.NewClient(&redis.Options{
+			Addr:     fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+			Password: cfg.Password, // no password set
+			DB:       cfg.Db,       // use default DB
+			Protocol: cfg.Protocol, // specify 2 for RESP 2, or 3 for RESP 3.
 		}),
 	}
 	if rdb.db == nil {
@@ -42,11 +44,15 @@ func (r *Rdb) Ping() bool {
 
 // Exist
 func (r *Rdb) Exist(k string) (bool, error) {
-	return r.Exist(k)
+	v, err := r.db.Exists(r.ctx, k).Result()
+	if err != nil {
+		return false, err
+	}
+	return v > 0, nil
 }
 
 func (r *Rdb) Del(k string) error {
-	return r.Del(k)
+	return r.db.Del(r.ctx, k).Err()
 }
 
 // String
@@ -77,16 +83,15 @@ func (r *Rdb) SetProto(k string, v proto.Message) error {
 
 func (r *Rdb) GetProto(k string, v proto.Message) (bool, error) {
 	d, err := r.Get(k)
-	if err != nil {
-		if err = util.Deserialize([]byte(d), v); err == nil {
-			return true, nil
-		}
-	} else if err != redis.Nil {
-		// redis error
-		return false, err	
+
+	switch {
+	case err == redis.Nil:
+		return false, nil
+	case err != nil:
+		return false, err
 	}
-	// cache not hit
-	return false, nil
+	if err = util.Deserialize([]byte(d), v); err != nil {
+		return false, err
+	}
+	return true, nil
 }
-
-
