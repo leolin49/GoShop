@@ -3,16 +3,22 @@ package main
 import (
 	"flag"
 	"goshop/configs"
+	"goshop/models"
+	"goshop/pkg/mysql"
+	"goshop/pkg/redis"
 	service "goshop/pkg/service"
 	"sync"
 	"time"
 
 	"github.com/golang/glog"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 type CartServer struct {
 	service.Service
+	db *gorm.DB
+	rdb *redis.Rdb
 }
 
 var (
@@ -29,18 +35,31 @@ func CartServerGetInstance() *CartServer {
 }
 
 func (s *CartServer) Init() bool {
+	var err error
 	if !configs.ParseConfig() {
 		glog.Errorln("[CartServer] parse config error.")
 		return false
 	}
+	// RPC server
 	if !rpcServerStart() {
 		glog.Errorln("[CartServer] rpc server start error.")
 		return false
 	}
-	if !mysqlDatabaseInit() {
+
+	// MySQL connect
+	if s.db, err = mysql.DatabaseInit(&configs.GetConf().MysqlCfg); err != nil {
 		glog.Errorln("[CartServer] mysql database init error.")
 		return false
 	}
+	// MySQL table migrate
+	s.db.AutoMigrate(&models.Cart{})
+
+	// Redis connect
+	if s.rdb, err = redis.NewRedisClient(&configs.GetConf().RedisCfg); err != nil {
+		glog.Errorln("[CartServer] redis database init error.")
+		return false
+	}
+
 	// Consul register
 	if !service.ServiceRegister(
 		"1",

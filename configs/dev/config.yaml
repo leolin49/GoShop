@@ -1,4 +1,5 @@
 mysql: # docker
+  dsnformat: "%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=true"
   username: root
   password: 123
   host: 127.0.0.1
@@ -11,16 +12,26 @@ consul: # docker
   port: 8500
   scheme: http
 
-rabbitmq:
+rabbitmq: # docker
   urlformat: "amqp://%s:%s@%s:%s/"
   username: root
   password: goshop
   host: "127.0.0.1"
   port: 5672
 
+redis: # docker
+  host: 127.0.0.1
+  port: 6379
+  network: "tcp"
+  username: ""
+  password: ""
+  protocol: 3
+  db: 0
+
 gateway-service:
   host: 192.168.1.145
   port: 8080
+  mqname: checkout-queue
 
 login-service:
   host: 192.168.1.145

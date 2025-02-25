@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"goshop/configs"
+	"goshop/pkg/mq"
 	service "goshop/pkg/service"
 	"sync"
 	"time"
@@ -12,10 +13,13 @@ import (
 
 type GatewayServer struct {
 	service.Service
+	MQClient *mq.RabbitMQ
 }
 
-var server *GatewayServer
-var once sync.Once
+var (
+	server *GatewayServer
+	once sync.Once
+)
 
 func GatewayServerGetInstance() *GatewayServer {
 	once.Do(func() {
@@ -32,6 +36,15 @@ func (s *GatewayServer) Init() bool {
 	}
 	// rpc clients.
 	rpcClientsStart()
+
+	// rabbit client.
+	var err error
+	cfg := configs.GetConf()
+	s.MQClient, err = mq.NewRabbitMQWorkClient("checkout-queue", cfg.GetRabbitMQUrl())
+	if err != nil {
+		glog.Errorln("[GatewayServer] rabbit mq client start error.")
+		return false
+	}
 
 	if !httpServerStart() {
 		glog.Errorln("[GatewayServer] http server start error.")

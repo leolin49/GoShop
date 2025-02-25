@@ -3,16 +3,20 @@ package main
 import (
 	"flag"
 	"goshop/configs"
+	"goshop/models"
+	"goshop/pkg/mysql"
 	service "goshop/pkg/service"
 	"sync"
 	"time"
 
 	"github.com/golang/glog"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 type LoginServer struct {
 	service.Service
+	db *gorm.DB
 }
 
 var (
@@ -29,19 +33,27 @@ func LoginServerGetInstance() *LoginServer {
 }
 
 func (s *LoginServer) Init() bool {
+	var err error
+	// Parse config
 	if !configs.ParseConfig() {
 		glog.Errorln("[LoginServer] parse config error.")
 		return false
 	}
+	// Rpc server 
 	if !rpcServerStart() {
 		glog.Errorln("[LoginServer] rpc server start error.")
 		return false
 	}
-	if !mysqlDatabaseInit() {
+
+	// MySQL connect
+	if s.db, err = mysql.DatabaseInit(&configs.GetConf().MysqlCfg); err != nil {
 		glog.Errorln("[LoginServer] mysql database init error.")
 		return false
 	}
+	// MySQL table migrate
+	s.db.AutoMigrate(&models.User{})
 
+	// Rpc client
 	rpcClientsStart()
 
 	// Consul register
@@ -56,6 +68,7 @@ func (s *LoginServer) Init() bool {
 		glog.Errorln("[LoginServer] consul register error.")
 		return false
 	}
+
 	return true
 }
 

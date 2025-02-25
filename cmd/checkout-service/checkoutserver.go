@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"goshop/configs"
+	"goshop/pkg/redis"
 	service "goshop/pkg/service"
 	"sync"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 type CheckoutServer struct {
 	service.Service
+	rdb	*redis.Rdb
 }
 
 var (
@@ -37,10 +39,15 @@ func (s *CheckoutServer) Init() bool {
 		glog.Errorln("[CheckoutServer] rpc server start error.")
 		return false
 	}
+
+	// mysql
 	if !mysqlDatabaseInit() {
 		glog.Errorln("[CheckoutServer] mysql database init error.")
 		return false
 	}
+
+	// redis
+	s.rdb = redis.NewRedisClient(&configs.GetConf().RedisCfg)
 
 	// rpc clients
 	rpcClientsStart()

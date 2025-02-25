@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	cartpb "goshop/api/protobuf/cart"
 	"goshop/models"
 	errorcode "goshop/pkg/error"
@@ -58,8 +59,34 @@ func (s *CartRpcService) CleanCart(ctx context.Context, req *cartpb.ReqCleanCart
 	}, nil
 }
 
+// func Helper(ctx context.Context, rdb *redis.Rdb, prefix string, req interface{}, handlerFunc func()) (interface{}, error) {
+// 	key := fmt.Sprintf("%s:%d", prefix, req.UserId)
+// 	ret := reflect.New(reflect.TypeOf(req))
+// 	cache, err := rdb.GetProto(key, ret.Interface().(proto.Message))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if cache {
+// 		return ret, nil
+// 	}
+// 	return ret, nil
+// }
+
 func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*cartpb.RspGetCart, error) {
-	carts, err := models.NewCartQuery(Mysql()).GetByUserId(req.UserId)
+	// redis cache
+	rdb := CartServerGetInstance().rdb
+	key := fmt.Sprintf("card:%d", req.UserId)
+	var ret cartpb.RspGetCart
+	cache, err := rdb.GetProto(key, &ret)
+	if err != nil {
+		return nil, err
+	}
+	if cache {
+		return &ret, nil
+	}
+
+	db := CartServerGetInstance().db
+	carts, err := models.NewCartQuery(db).GetByUserId(req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +97,50 @@ func (s *CartRpcService) GetCart(ctx context.Context, req *cartpb.ReqGetCart) (*
 			Quantity:  int32(cart.ProductCnt),
 		})
 	}
-	return &cartpb.RspGetCart{
+	ret = cartpb.RspGetCart{
 		ErrorCode: errorcode.Ok,
 		Cart: &cartpb.Cart{
 			UserId: req.UserId,
 			Items:  items,
 		},
-	}, nil
+	}
+
+	// redis cache
+	if err = rdb.SetProto(key, &ret); err != nil {
+		glog.Errorln("[CartServer] cache write error: ", err.Error())
+	}
+
+	return &ret, nil
 }
+
+// NOTE: grpc cache middleware, don't use !
+// func CacheMiddleware(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+// 	rdb, ok := ctx.Value("rdb").(*redis.Rdb)
+// 	if !ok {
+// 		return nil, errors.New("grpc cache middleware: no redis client")
+// 	}
+
+// 	key := fmt.Sprintf("%s:%v", info.FullMethod, req)
+// 	data, err := rdb.Get(key)
+// 	if err == nil {
+// 		ret := &cartpb.RspGetCart{}
+// 		if err = util.Deserialize([]byte(data), ret); err == nil {
+// 			return ret, nil
+// 		} 	
+// 	}
+// 	ret, err := handler(ctx, req)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	cacheData, err := util.Serialize(ret.(proto.Message))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	err = rdb.Set(key, string(cacheData))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return ret, nil
+// }
+

@@ -41,7 +41,7 @@ func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegi
 		res   *gorm.DB
 	)
 	// Check user if already exist by email.
-	if res = Mysql().Model(&models.User{}).Where("email=?", req.Email).Count(&exist); res.Error != nil {
+	if res = LoginServerGetInstance().db.Model(&models.User{}).Where("email=?", req.Email).Count(&exist); res.Error != nil {
 		return &loginpb.RspRegisterUser{
 			ErrorCode: errorcode.UnknowError,
 		}, res.Error
@@ -56,7 +56,7 @@ func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegi
 		Name:     req.Username,
 		Password: req.Password,
 	}
-	res = Mysql().Create(user)
+	res = LoginServerGetInstance().db.Create(user)
 	if err := res.Error; err != nil {
 		return &loginpb.RspRegisterUser{
 			ErrorCode: errorcode.UnknowError,
@@ -64,7 +64,7 @@ func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegi
 	}
 
 	var user_id int64
-	res = Mysql().Model(&models.User{}).Select("id").Where("email=?", req.Email).Find(&user_id)
+	res = LoginServerGetInstance().db.Model(&models.User{}).Select("id").Where("email=?", req.Email).Find(&user_id)
 	if err := res.Error; err != nil {
 		return &loginpb.RspRegisterUser{
 			ErrorCode: errorcode.UnknowError,
@@ -78,7 +78,7 @@ func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegi
 
 func (s *LoginRpcService) LoginUser(ctx context.Context, req *loginpb.ReqLoginUser) (*loginpb.RspLoginUser, error) {
 	var user models.User
-	res := Mysql().Select("id, password").Where("email=?", req.Email).Find(&user)
+	res := LoginServerGetInstance().db.Select("id, password").Where("email=?", req.Email).Find(&user)
 	if err := res.Error; err != nil {
 		return &loginpb.RspLoginUser{
 			ErrorCode: errorcode.UnknowError,

@@ -22,9 +22,11 @@ type Config struct {
 	CheckoutCfg ServiceConfig  `yaml:"checkout-service"`
 	OrderCfg    ServiceConfig  `yaml:"order-service"`
 	RabbitMqCfg RabbitMQConfig `yaml:"rabbitmq"`
+	RedisCfg	RedisConfig	   `yaml:"redis"`
 }
 
 type MySQLConfig struct {
+	DSNFormat	string `yaml:"dsnformat"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	DataBase string `yaml:"database"`
@@ -44,6 +46,15 @@ type RabbitMQConfig struct {
 	Username  string `yaml:"username"`
 	Password  string `yaml:"password"`
 	ServiceConfig
+}
+
+type RedisConfig struct {
+	ServiceConfig
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+	Network	  string `yaml:"network"`
+	Db		  int	 `yaml:"db"`
+	Protocol  int	 `yaml:"protocol"`
 }
 
 type ServiceConfig struct {

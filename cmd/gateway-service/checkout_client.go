@@ -3,8 +3,6 @@ package main
 import (
 	checkoutpb "goshop/api/protobuf/checkout"
 	paypb "goshop/api/protobuf/pay"
-	"goshop/configs"
-	"goshop/pkg/mq"
 	"goshop/pkg/service"
 	"net/http"
 
@@ -12,7 +10,6 @@ import (
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -81,21 +78,6 @@ func handleCheckout(c *gin.Context) {
 		CreditCardExpirationYear:  int32(cardExpYear),
 	}
 
-	// 	ret, err := CheckoutClient().Checkout(context.Background(), &checkoutpb.ReqCheckout{
-	// 		UserId:    userId,
-	// 		FirstName: firstName,
-	// 		LastName:  lastName,
-	// 		Email:     email,
-	// 		Address:   address,
-	// 		CardInfo:  cardInfo,
-	// 	})
-	// 	if err != nil {
-	// 		c.JSON(http.StatusBadGateway, gin.H{
-	// 			"error": err.Error(),
-	// 		})
-	// 		return
-	// 	}
-
 	req := &checkoutpb.ReqCheckout{
 		UserId:    userId,
 		FirstName: firstName,
@@ -104,15 +86,10 @@ func handleCheckout(c *gin.Context) {
 		Address:   address,
 		CardInfo:  cardInfo,
 	}
-	message, err := proto.Marshal(req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{})
-	}
-	q, err := mq.NewRabbitMQWorkClient("checkout-queue", configs.GetConf().GetRabbitMQUrl())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{})
-	}
-	go q.PublishSimple(message)
 
-	c.JSON(http.StatusOK, gin.H{})
+	go GatewayServerGetInstance().MQClient.PublishProtoMsgSimple(req)
+
+	c.JSON(http.StatusOK, gin.H{
+		"info": "checkout request finish",
+	})
 }

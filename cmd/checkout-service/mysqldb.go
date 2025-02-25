@@ -15,7 +15,7 @@ var db *gorm.DB
 func mysqlDatabaseInit() bool {
 	cfg := configs.GetConf().MysqlCfg
 	dbconn, err := gorm.Open(mysql.New(mysql.Config{
-		DSN: fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=true",
+		DSN: fmt.Sprintf(cfg.DSNFormat,
 			cfg.Username,
 			cfg.Password,
 			cfg.Host,
