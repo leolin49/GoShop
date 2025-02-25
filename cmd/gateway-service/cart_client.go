@@ -42,7 +42,6 @@ func CartClientClose() { cart_conn.Close() }
 
 func handleAddCart(c *gin.Context) {
 	user_id, ok := c.Get("user_id")
-	glog.Errorln(ok, user_id)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error_code": errorcode.UnknowError,

@@ -37,11 +37,17 @@ func (s *CheckoutServer) Init() bool {
 		glog.Errorln("[CheckoutServer] rpc server start error.")
 		return false
 	}
-	rpcClientsStart()
 	if !mysqlDatabaseInit() {
 		glog.Errorln("[CheckoutServer] mysql database init error.")
 		return false
 	}
+
+	// rpc clients
+	rpcClientsStart()
+
+	// RabbitMQ consume
+	go rabbitConsumer("checkout-queue", configs.GetConf().GetRabbitMQUrl())
+
 	// Consul register
 	if !service.ServiceRegister(
 		"1",

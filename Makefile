@@ -62,8 +62,11 @@ stop:
 	$(foreach service,$(SERVICES), pkill -f $(service) || true;)
 	@echo "All services has been stopped."
 
+.PHONY: rebuild
+rebuild: clean build 
+
 .PHONY: restart
-restart: stop run
+restart: clean stop run
 
 .PHONY: gateway
 gateway: $(BIN)/gateway-service

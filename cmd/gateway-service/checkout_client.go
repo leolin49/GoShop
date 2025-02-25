@@ -1,9 +1,10 @@
 package main
 
 import (
-	"context"
 	checkoutpb "goshop/api/protobuf/checkout"
 	paypb "goshop/api/protobuf/pay"
+	"goshop/configs"
+	"goshop/pkg/mq"
 	"goshop/pkg/service"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -48,16 +50,14 @@ func handleCheckout(c *gin.Context) {
 	}
 	userId := user_id.(uint32)
 	var (
-		firstName = c.PostForm("first_name")
-		lastName  = c.PostForm("last_name")
-		email     = c.PostForm("email")
-		// address
-		streetAddress = c.PostForm("street")
-		city          = c.PostForm("city")
-		state         = c.PostForm("state")
-		country       = c.PostForm("country")
-		zipCode, _    = getPostFormInt(c, "zip_code")
-		// card
+		firstName       = c.PostForm("first_name")
+		lastName        = c.PostForm("last_name")
+		email           = c.PostForm("email")
+		streetAddress   = c.PostForm("street")
+		city            = c.PostForm("city")
+		state           = c.PostForm("state")
+		country         = c.PostForm("country")
+		zipCode, _      = getPostFormInt(c, "zip_code")
 		cardNumber      = c.PostForm("card_number")
 		cardCvv, _      = getPostFormInt(c, "card_cvv")
 		cardExpMonth, _ = getPostFormInt(c, "card_exp_month")
@@ -81,19 +81,38 @@ func handleCheckout(c *gin.Context) {
 		CreditCardExpirationYear:  int32(cardExpYear),
 	}
 
-	ret, err := CheckoutClient().Checkout(context.Background(), &checkoutpb.ReqCheckout{
+	// 	ret, err := CheckoutClient().Checkout(context.Background(), &checkoutpb.ReqCheckout{
+	// 		UserId:    userId,
+	// 		FirstName: firstName,
+	// 		LastName:  lastName,
+	// 		Email:     email,
+	// 		Address:   address,
+	// 		CardInfo:  cardInfo,
+	// 	})
+	// 	if err != nil {
+	// 		c.JSON(http.StatusBadGateway, gin.H{
+	// 			"error": err.Error(),
+	// 		})
+	// 		return
+	// 	}
+
+	req := &checkoutpb.ReqCheckout{
 		UserId:    userId,
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
 		Address:   address,
 		CardInfo:  cardInfo,
-	})
-	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{
-			"error": err.Error(),
-		})
-		return
 	}
-	c.JSON(http.StatusOK, ret)
+	message, err := proto.Marshal(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{})
+	}
+	q, err := mq.NewRabbitMQWorkClient("checkout-queue", configs.GetConf().GetRabbitMQUrl())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{})
+	}
+	go q.PublishSimple(message)
+
+	c.JSON(http.StatusOK, gin.H{})
 }

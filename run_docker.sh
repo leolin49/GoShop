@@ -46,6 +46,25 @@ start_nginx() {
         -d nginx:latest
 }
 
+start_rabbitmq() {
+    echo "Stopping and removing existing RabbitMQ container..."
+    docker stop rabbitmq 
+    docker rm rabbitmq 
+    sleep 1
+
+    echo "Starting RabbitMQ container..."
+	docker run -id --name=rabbitmq \
+	-p 5671:5671 \
+	-p 5672:5672 \
+	-p 4369:4369 \
+	-p 15671:15671 \
+	-p 15672:15672 \
+	-p 25672:25672 \
+	-e RABBITMQ_DEFAULT_USER=root \
+	-e RABBITMQ_DEFAULT_PASS=goshop \
+	rabbitmq:management
+}
+
 case "$1" in
     consul)
         start_consul
@@ -56,13 +75,16 @@ case "$1" in
     nginx)
         start_nginx
         ;;
+	rabbitmq)
+		start_rabbitmq
+		;;
     all)
         start_consul
         start_mysql
         start_nginx
         ;;
     *)
-        echo "Usage: $0 {consul|mysql|nginx|all}"
+        echo "Usage: $0 {consul|mysql|nginx|rabbitmq|all}"
         exit 1
         ;;
 esac
