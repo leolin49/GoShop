@@ -28,6 +28,8 @@ main() {
 		restart)
 			if [ -z "$2" ]; then
 				stop_all
+				sleep 2
+				run_all
 			elif [[ " ${SERVICES[@]} " =~ " $2 " ]]; then
 				stop_service "$2"
 				sleep 1
@@ -55,7 +57,7 @@ run_gateway() {
 	for node in node1 node2 node3; do
 		echo "running ${service_name}-service ${node}"
 		mkdir -p "${BIN}/${service_name}-${node}"
-		nohup "${BIN}/${service_name}-service" -log_dir="${BIN}/${service_name}-${node}" > /dev/null 2>&1 &
+		nohup "${BIN}/${service_name}-service" -node="${node}" -log_dir="${BIN}/${service_name}-${node}" > /dev/null 2>&1 &
 		sleep 0.5
 	done
 	pgrep -f "${BIN}/${service_name}-service" > /dev/null && echo "${service_name} start success" || echo "${service_name} start failed"
