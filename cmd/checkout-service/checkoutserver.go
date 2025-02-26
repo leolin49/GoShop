@@ -17,7 +17,7 @@ type CheckoutServer struct {
 }
 
 var (
-	rdb    *redis.Rdb
+	rdb    redis.IRdb
 	server *CheckoutServer
 	once   sync.Once
 )

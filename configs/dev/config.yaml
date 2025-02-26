@@ -29,35 +29,35 @@ redis: # docker
   db: 0
 
 gateway-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 8080
   mqname: checkout-queue
 
 login-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49000
 
 product-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49100
 
 cart-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49200
 
 auth-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49300
 
 pay-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49400
 
 checkout-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49500
 
 order-service:
-  host: 192.168.1.145
+  host: 10.255.103.106
   port: 49600
 

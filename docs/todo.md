@@ -27,3 +27,6 @@
 ### GoMock
 1. 通过gomock实现redis模块的单测，需要强制使用面向interface编程；
 2. TODO: 其他模块也通过mock测试？
+
+
+> 已接入redis缓存的服务: cart checkout

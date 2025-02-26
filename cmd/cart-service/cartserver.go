@@ -22,7 +22,7 @@ type CartServer struct {
 var (
 	server *CartServer
 	db     *gorm.DB
-	rdb    *redis.Rdb
+	rdb    redis.IRdb
 	once   sync.Once
 )
 
@@ -55,7 +55,6 @@ func (s *CartServer) Init() bool {
 	db.AutoMigrate(&models.Cart{})
 
 	// Redis connect
-	glog.Info(configs.GetConf().RedisCfg)
 	if rdb, err = redis.NewRedisClient(&configs.GetConf().RedisCfg); err != nil {
 		glog.Errorln("[CartServer] redis database init error.")
 		return false

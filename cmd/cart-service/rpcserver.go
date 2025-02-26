@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	cartpb "goshop/api/protobuf/cart"
+	productpb "goshop/api/protobuf/product"
 	"goshop/models"
 	errorcode "goshop/pkg/error"
 	"net"
@@ -40,12 +42,22 @@ func (s *CartRpcService) AddItem(ctx context.Context, req *cartpb.ReqAddItem) (*
 			glog.Errorln("[CartServer] delete redis cache failed: ", err.Error())
 		}
 	}()
+	if req.Item == nil {
+		return nil, errors.New("no any item need to add in cart")
+	}
+	_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
+		Id: req.Item.ProductId,
+	})
+	if err != nil {
+		return nil, err
+	}
 	cart := &models.Cart{
 		UserId:     uint64(req.UserId),
 		ProductId:  uint64(req.Item.ProductId),
 		ProductCnt: uint64(req.Item.Quantity),
 	}
-	err := models.NewCartQuery(db).AddProduct(cart)
+	// Check the product if exist or not.
+	err = models.NewCartQuery(db).AddProduct(cart)
 	if err != nil {
 		return nil, err
 	}
