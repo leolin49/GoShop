@@ -35,9 +35,13 @@ func LoginClientStart() bool {
 	return true
 }
 
-func LoginClient() loginpb.LoginServiceClient { return login_client }
+func LoginClient() loginpb.LoginServiceClient {
+	return login_client
+}
 
-func LoginClientClose() { login_conn.Close() }
+func LoginClientClose() error {
+	return login_conn.Close()
+}
 
 func handleRegister(c *gin.Context) {
 	email := c.PostForm("email")

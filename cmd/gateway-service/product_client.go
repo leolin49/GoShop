@@ -37,9 +37,13 @@ func ProductClientStart() bool {
 	return true
 }
 
-func ProductClient() productpb.ProductServiceClient { return product_client }
+func ProductClient() productpb.ProductServiceClient {
+	return product_client
+}
 
-func ProductClientClose() { product_conn.Close() }
+func ProductClientClose() error {
+	return product_conn.Close()
+}
 
 func handleAddProduct(c *gin.Context) {
 	productName := c.PostForm("product_name")

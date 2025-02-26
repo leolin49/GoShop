@@ -36,9 +36,13 @@ func CartClientStart() bool {
 	return true
 }
 
-func CartClient() cartpb.CartServiceClient { return cart_client }
+func CartClient() cartpb.CartServiceClient {
+	return cart_client
+}
 
-func CartClientClose() { cart_conn.Close() }
+func CartClientClose() error {
+	return cart_conn.Close()
+}
 
 func handleAddCart(c *gin.Context) {
 	user_id, ok := c.Get("user_id")

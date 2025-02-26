@@ -36,9 +36,13 @@ func AuthClientStart() bool {
 	return true
 }
 
-func AuthClient() authpb.AuthServiceClient { return auth_client }
+func AuthClient() authpb.AuthServiceClient {
+	return auth_client
+}
 
-func AuthClientClose() { auth_conn.Close() }
+func AuthClientClose() error {
+	return auth_conn.Close()
+}
 
 func handleRefreshToken(c *gin.Context) {
 	refreshToken := c.PostForm("refreshToken")

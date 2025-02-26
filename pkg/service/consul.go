@@ -7,7 +7,13 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/hashicorp/consul/api"
+	"gopkg.in/yaml.v3"
 )
+
+// TODO
+// type Consul struct {
+// 	client *api.Config
+// }
 
 func consulConf() *api.Config {
 	cfg := &configs.GetConf().ConsulCfg
@@ -94,4 +100,51 @@ func ServiceRecover(serviceName string) (addr string, err error) {
 		retryInterval *= 2
 	}
 	return
+}
+
+// Consul configure management.
+func ConfigRecover(configPath string) (*configs.Config, error) {
+	var (
+		err       error
+		cfg       configs.Config
+		lastIndex uint64
+	)
+	consulClient, err := newConsulClient()
+	if err != nil {
+		return nil, err
+	}
+	kv := consulClient.KV()
+	data, meta, err := kv.Get(configPath, &api.QueryOptions{
+		WaitIndex: lastIndex,
+		WaitTime:  600 * time.Second,
+	})
+	if err != nil {
+		glog.Errorf("[Consul] Failed to recover [%s] config file: %s\n", configPath, err.Error())
+		return nil, err
+	}
+	if meta.LastIndex != lastIndex {
+		lastIndex = meta.LastIndex
+		if data != nil {
+			if err = yaml.Unmarshal(data.Value, &cfg); err != nil {
+				glog.Errorf("[Consul] Failed to parse [%s] config file: %s\n", configPath, err.Error())
+				return nil, err
+			}
+		}
+	}
+	return &cfg, nil
+}
+
+func ConfigQuery(configPath string) (*configs.Config, error) {
+	consulClient, err := newConsulClient()
+	if err != nil {
+		return nil, err
+	}
+	kv := consulClient.KV()
+	data, _, err := kv.Get(configPath, nil)
+	var cfg configs.Config
+	if err = yaml.Unmarshal(data.Value, &cfg); err != nil {
+		glog.Errorln("[Consul] Failed to parse config file: ", err.Error())
+		return nil, err
+	}
+	return &cfg, nil
 }

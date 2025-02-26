@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"goshop/configs"
 	errorcode "goshop/pkg/error"
 	"net/http"
 	"strconv"
@@ -10,7 +11,7 @@ import (
 	"github.com/golang/glog"
 )
 
-func httpServerStart() bool {
+func httpServerStart(cfg *configs.Config) bool {
 	router := gin.Default()
 	gin.DisableConsoleColor()
 	// f, _ := os.Create("gin.log")
@@ -19,7 +20,8 @@ func httpServerStart() bool {
 	registerRoute(router)
 
 	go func() {
-		if err := router.Run("0.0.0.0:8080"); err != nil {
+		addr := fmt.Sprintf("%s:%s", cfg.GatewayCfg.Host, cfg.GatewayCfg.Port)
+		if err := router.Run(addr); err != nil {
 			glog.Errorln("[Gatewayserver] gin route run failed: ", err.Error())
 			return
 		}
@@ -30,7 +32,8 @@ func httpServerStart() bool {
 }
 
 func registerRoute(r *gin.Engine) {
-	r.GET("/home", func(c *gin.Context) {
+	r.GET("/hello", func(c *gin.Context) {
+		glog.Infof("[Gatewayserver] Get hello message from [%v] !!!\n", c.ClientIP())
 		c.JSON(http.StatusOK, gin.H{
 			"x": "hello world",
 		})

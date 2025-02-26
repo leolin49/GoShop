@@ -13,7 +13,7 @@ var cfg *Config
 type Config struct {
 	MysqlCfg    MySQLConfig    `yaml:"mysql"`
 	ConsulCfg   ConsulConfig   `yaml:"consul"`
-	GatewayCfg  ServiceConfig  `yaml:"gateway-service"`
+	GatewayCfg  GatewayConfig  `yaml:"gateway-service"`
 	LoginCfg    ServiceConfig  `yaml:"login-service"`
 	AuthCfg     ServiceConfig  `yaml:"auth-service"`
 	ProductCfg  ServiceConfig  `yaml:"product-service"`
@@ -57,6 +57,12 @@ type RedisConfig struct {
 	Network  string `yaml:"network"`
 	Db       int    `yaml:"db"`
 	Protocol int    `yaml:"protocol"`
+}
+
+type GatewayConfig struct {
+	Host   string `yaml:"host"`
+	Port   string `yaml:"port"`
+	MqName string `yaml:"mqname"`
 }
 
 type ServiceConfig struct {

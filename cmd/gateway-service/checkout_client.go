@@ -35,9 +35,13 @@ func CheckoutClientStart() bool {
 	return true
 }
 
-func CheckoutClient() checkoutpb.CheckoutServiceClient { return checkout_client }
+func CheckoutClient() checkoutpb.CheckoutServiceClient {
+	return checkout_client
+}
 
-func CheckoutClientClose() { checkout_conn.Close() }
+func CheckoutClientClose() error {
+	return checkout_conn.Close()
+}
 
 func handleCheckout(c *gin.Context) {
 	user_id, ok := c.Get("user_id")

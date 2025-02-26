@@ -46,6 +46,7 @@ start_nginx() {
         -d nginx:latest
 }
 
+# docker pull rabbitmq:management
 start_rabbitmq() {
     echo "Stopping and removing existing RabbitMQ container..."
     docker stop rabbitmq 
