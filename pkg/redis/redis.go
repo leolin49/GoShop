@@ -12,12 +12,24 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+type IRdb interface {
+	Ping() bool
+	Exist(k string) (bool, error)
+	Del(k string) error
+	Set(k, v string) error
+	Get(k string) (string, error)
+	SetInt(k string, v int) error
+	GetInt(k string) (int, error)
+	SetProto(k string, v proto.Message) error
+	GetProto(k string, v proto.Message) (bool, error)
+}
+
 type Rdb struct {
 	ctx context.Context
 	db  *redis.Client
 }
 
-func NewRedisClient(cfg *configs.RedisConfig) (*Rdb, error) {
+func NewRedisClient(cfg *configs.RedisConfig) (IRdb, error) {
 	rdb := &Rdb{
 		ctx: context.Background(),
 		db: redis.NewClient(&redis.Options{

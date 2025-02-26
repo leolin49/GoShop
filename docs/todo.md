@@ -21,3 +21,9 @@
 
 ### Gateway
 1. 通过启动参数区分不同节点，并在Nginx实现Gateway的负载均衡；
+
+## 2025.02.26
+
+### GoMock
+1. 通过gomock实现redis模块的单测，需要强制使用面向interface编程；
+2. TODO: 其他模块也通过mock测试？
