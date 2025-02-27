@@ -49,7 +49,7 @@ func (s *LoginServer) Init() bool {
 	// Consul client
 	consul, err = service.NewConsulClient(&configs.GetConf().ConsulCfg)
 	if err != nil {
-		glog.Errorln("[GatewayServer] new consul client failed: ", err.Error())
+		glog.Errorln("[LoginServer] new consul client failed: ", err.Error())
 		return false
 	}
 
@@ -86,7 +86,7 @@ func (s *LoginServer) Init() bool {
 	if !consul.ServiceRegister(
 		serverId,
 		"login-service",
-		os.Getenv("LOCALIP"),
+		cfg.LoginCfg.Host,
 		cfg.LoginCfg.Port,
 		"5s",
 		"5s",

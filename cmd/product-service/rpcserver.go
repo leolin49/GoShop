@@ -34,8 +34,8 @@ func rpcServerStart() bool {
 }
 
 func (s *ProductRpcService) AddProduct(ctx context.Context, req *productpb.ReqAddProduct) (*productpb.RspAddProduct, error) {
-	cq := models.NewCategoryQuery(Mysql())
-	if exist, err := models.NewProductQuery(Mysql()).ProductExisted(req.Product.Name); exist {
+	cq := models.NewCategoryQuery(db)
+	if exist, err := models.NewProductQuery(db).ProductExisted(req.Product.Name); exist {
 		return &productpb.RspAddProduct{
 			ErrorCode: errorcode.ProductAlreadyExist,
 		}, err
@@ -58,7 +58,7 @@ func (s *ProductRpcService) AddProduct(ctx context.Context, req *productpb.ReqAd
 		Price:       req.Product.Price,
 		Categories:  categories,
 	}
-	res := Mysql().Create(product)
+	res := db.Create(product)
 	if err := res.Error; err != nil {
 		return &productpb.RspAddProduct{
 			ErrorCode: errorcode.UnknowError,
@@ -70,7 +70,7 @@ func (s *ProductRpcService) AddProduct(ctx context.Context, req *productpb.ReqAd
 }
 
 func (s *ProductRpcService) ListProducts(ctx context.Context, req *productpb.ReqListProducts) (*productpb.RspListProducts, error) {
-	res, err := models.NewCategoryQuery(Mysql()).ListProducts(req.CategoryName, int(req.Page), int(req.PageSize))
+	res, err := models.NewCategoryQuery(db).ListProducts(req.CategoryName, int(req.Page), int(req.PageSize))
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (s *ProductRpcService) ListProducts(ctx context.Context, req *productpb.Req
 }
 
 func (s *ProductRpcService) GetProduct(ctx context.Context, req *productpb.ReqGetProduct) (*productpb.RspGetProduct, error) {
-	res, err := models.NewProductQuery(Mysql()).GetById(int32(req.Id))
+	res, err := models.NewProductQuery(db).GetById(int32(req.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (s *ProductRpcService) GetProduct(ctx context.Context, req *productpb.ReqGe
 }
 
 func (s *ProductRpcService) SearchProducts(ctx context.Context, req *productpb.ReqSearchProducts) (*productpb.RspSearchProducts, error) {
-	res, err := models.NewProductQuery(Mysql()).SearchProducts(req.Query)
+	res, err := models.NewProductQuery(db).SearchProducts(req.Query)
 	if err != nil {
 		return nil, err
 	}

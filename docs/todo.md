@@ -40,7 +40,7 @@
 1. TODO: mysql读写分离 consul配置中心(DONE)
 
 ### 代码重构
-2. gateway login
+2. gateway login product auth
 
 > 已接入redis缓存的服务: cart checkout
 
