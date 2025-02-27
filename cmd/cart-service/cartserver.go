@@ -20,10 +20,12 @@ type CartServer struct {
 }
 
 var (
-	server *CartServer
-	db     *gorm.DB
-	rdb    redis.IRdb
-	once   sync.Once
+	serverId string
+	consul   *service.ConsulClient
+	server   *CartServer
+	db       *gorm.DB
+	rdb      redis.IRdb
+	once     sync.Once
 )
 
 func CartServerGetInstance() *CartServer {
@@ -40,14 +42,30 @@ func (s *CartServer) Init() bool {
 		glog.Errorln("[CartServer] parse config error.")
 		return false
 	}
-	// RPC server
-	if !rpcServerStart() {
-		glog.Errorln("[CartServer] rpc server start error.")
+
+	// Consul client
+	consul, err = service.NewConsulClient(&configs.GetConf().ConsulCfg)
+	if err != nil {
+		glog.Errorln("[CartServer] new consul client failed: ", err.Error())
 		return false
 	}
 
+	cfg, err := consul.ConfigQuery("cart-service/" + serverId)
+	if err != nil {
+		glog.Errorln("[CartServer] recover config from consul error: ", err.Error())
+		return false
+	}
+
+	// RPC server
+	if !rpcServerStart(cfg) {
+		glog.Errorln("[CartServer] rpc server start error.")
+		return false
+	}
+	// RPC client
+	rpcClientsStart()
+
 	// MySQL connect
-	if db, err = mysql.DatabaseInit(&configs.GetConf().MysqlCfg); err != nil {
+	if db, err = mysql.DBClusterInit(&cfg.MysqlClusterCfg); err != nil {
 		glog.Errorln("[CartServer] mysql database init error.")
 		return false
 	}
@@ -59,14 +77,13 @@ func (s *CartServer) Init() bool {
 		glog.Errorln("[CartServer] redis database init error.")
 		return false
 	}
-	glog.Infof("[CartServer] redis database [%s] init success.\n", configs.GetConf().GetRedisAddr())
 
 	// Consul register
-	if !service.ServiceRegister(
-		"1",
+	if !consul.ServiceRegister(
+		serverId,
 		"cart-service",
-		configs.GetConf().CartCfg.Host,
-		configs.GetConf().CartCfg.Port,
+		cfg.CartCfg.Host,
+		cfg.CartCfg.Port,
 		"1s",
 		"5s",
 	) {
@@ -84,14 +101,19 @@ func (s *CartServer) Final() bool { return true }
 
 func main() {
 	defer func() {
+		rpcClientsClose()
+		_ = consul.ServiceDeregister(serverId)
 		glog.Flush()
 	}()
 	err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
-	flag.Set("v", "2")
-	flag.Parse()
+	{
+		flag.Set("v", "2")
+		flag.StringVar(&serverId, "node", "node1", "the name of the service instance")
+		flag.Parse()
+	}
 	CartServerGetInstance().Main()
 	glog.Infoln("[CartServer] server closed.")
 }

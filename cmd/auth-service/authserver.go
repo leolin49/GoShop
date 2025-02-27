@@ -83,6 +83,7 @@ func (s *AuthServer) Final() bool {
 
 func main() {
 	defer func() {
+		_ = consul.ServiceDeregister(serverId)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

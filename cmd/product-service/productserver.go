@@ -19,13 +19,13 @@ type ProductServer struct {
 	service.Service
 }
 
-var (	
+var (
 	serverId string
-	consul *service.ConsulClient
+	consul   *service.ConsulClient
 	db       *gorm.DB
 	rdb      redis.IRdb
-	server *ProductServer
-	once   sync.Once
+	server   *ProductServer
+	once     sync.Once
 )
 
 func ProductServerGetInstance() *ProductServer {

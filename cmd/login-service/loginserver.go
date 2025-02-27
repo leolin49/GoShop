@@ -7,7 +7,6 @@ import (
 	"goshop/pkg/mysql"
 	"goshop/pkg/redis"
 	service "goshop/pkg/service"
-	"os"
 	"sync"
 	"time"
 
@@ -112,6 +111,7 @@ func (s *LoginServer) Final() bool {
 func main() {
 	defer func() {
 		rpcClientsClose()
+		_ = consul.ServiceDeregister(serverId)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

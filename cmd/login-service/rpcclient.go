@@ -35,7 +35,7 @@ func rpcClientsClose() {
 	for _, client := range clients {
 		go func(clientName string, clientFunc func() error) {
 			if err := clientFunc(); err != nil {
-				glog.Errorf("[GatewayServer] %s rpc client start failed: %s\n", clientName)
+				glog.Errorf("[LoginServer] %s rpc client close failed: %s\n", clientName)
 				return
 			}
 		}(client.name, client.closeFunc)

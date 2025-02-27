@@ -101,6 +101,7 @@ func (s *GatewayServer) Final() bool {
 func main() {
 	defer func() {
 		rpcClientsClose()
+		_ = consul.ServiceDeregister(serverId)
 		glog.Flush()
 	}()
 

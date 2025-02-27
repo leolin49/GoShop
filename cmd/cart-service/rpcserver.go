@@ -6,6 +6,7 @@ import (
 	"fmt"
 	cartpb "goshop/api/protobuf/cart"
 	productpb "goshop/api/protobuf/product"
+	"goshop/configs"
 	"goshop/models"
 	errorcode "goshop/pkg/error"
 	"net"
@@ -18,15 +19,16 @@ type CartRpcService struct {
 	cartpb.UnimplementedCartServiceServer
 }
 
-func rpcServerStart() bool {
-	lis, err := net.Listen("tcp", ":49200")
+func rpcServerStart(cfg *configs.Config) bool {
+	addr := fmt.Sprintf("%s:%s", cfg.CartCfg.Host, cfg.CartCfg.Port)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("[CartServer] rpcserver failed to listen: %v", err)
 		return false
 	}
 	rpcServer := grpc.NewServer()
 	cartpb.RegisterCartServiceServer(rpcServer, new(CartRpcService))
-	glog.Infoln("[CartServer] Starting rpc server on :49200")
+	glog.Infof("[CartServer] Starting rpc server on [%s]\n", addr)
 	go func() {
 		if err := rpcServer.Serve(lis); err != nil {
 			glog.Fatalf("[CartServer] rpcserver failed to start: %v", err)
