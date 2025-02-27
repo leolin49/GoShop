@@ -1,0 +1,55 @@
+version: '3.9'
+services:
+  mysql-master:
+    image: mysql
+    container_name: mysql-master
+    restart: always
+    ports:
+      - "3306:3306" 
+    environment:
+      MYSQL_ROOT_PASSWORD: 123 
+      MYSQL_DATABASE: goshop 
+    volumes:
+      - ~/mysql/master/conf:/etc/mysql/conf.d
+      - ~/mysql/master/data:/var/lib/mysql
+      - ~/mysql/master/logs:/logs
+
+  # mysql-source:
+  #   image: mysql
+  #   container_name: mysql-source
+  #   restart: always
+  #   ports:
+  #     - "3307:3306" 
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 123 
+  #   volumes:
+  #     - ~/mysql/source/conf:/etc/mysql/conf.d
+  #     - ~/mysql/source/data:/var/lib/mysql
+  #     - ~/mysql/source/logs:/logs
+
+  mysql-replica1:
+    image: mysql
+    container_name: mysql-replica1
+    restart: always
+    ports:
+      - "3311:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123 
+    volumes:
+      - ~/mysql/replica1/conf:/etc/mysql/conf.d
+      - ~/mysql/replica1/data:/var/lib/mysql
+      - ~/mysql/replica1/logs:/logs
+
+  # mysql-replica2:
+  #   image: mysql
+  #   container_name: mysql-replica2
+  #   restart: always
+  #   ports:
+  #     - "3312:3306" 
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 123 
+  #   volumes:
+  #     - ~/mysql/replica2/conf:/etc/mysql/conf.d
+  #     - ~/mysql/replica2/data:/var/lib/mysql
+  #     - ~/mysql/replica2/logs:/logs
+

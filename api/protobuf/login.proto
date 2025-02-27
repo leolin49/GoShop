@@ -17,7 +17,7 @@ message ReqRegisterUser {
 
 message RspRegisterUser {
   int32 error_code = 1;
-  int32 user_id = 2;
+  uint32 user_id = 2;
 }
 
 message ReqLoginUser {

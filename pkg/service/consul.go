@@ -10,32 +10,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// TODO
-// type Consul struct {
-// 	client *api.Config
-// }
-
-func consulConf() *api.Config {
-	cfg := &configs.GetConf().ConsulCfg
-	consulConfig := api.DefaultConfig()
-	consulConfig.Address = cfg.Host + ":" + cfg.Port
-	consulConfig.Scheme = cfg.Scheme // consul api protocol
-	return consulConfig
+type ConsulClient struct {
+	Conn *api.Client
 }
 
-func newConsulClient() (consulClient *api.Client, err error) {
-	consulClient, err = api.NewClient(consulConf())
+func NewConsulClient(cfg *configs.ConsulConfig) (consulClient *ConsulClient, err error) {
+	consulCfg := api.DefaultConfig()
+	consulCfg.Address = cfg.Host + ":" + cfg.Port
+	consulCfg.Scheme = cfg.Scheme
+	conn, err := api.NewClient(consulCfg)
 	if err != nil {
 		glog.Errorln("[Consul] new consul client error: ", err.Error())
+		return nil, err
 	}
-	return
+	return &ConsulClient{
+		Conn: conn,
+	}, nil
 }
 
-func ServiceRegister(id, name, address, port, checkTimeout, checkInterval string) bool {
-	consulClient, err := newConsulClient()
-	if err != nil {
-		return false
-	}
+func (c *ConsulClient) ServiceRegister(id, name, address, port, checkTimeout, checkInterval string) bool {
 	pt, _ := strconv.Atoi(port)
 	reg := api.AgentServiceRegistration{
 		ID:      name + "_" + id,
@@ -50,22 +43,18 @@ func ServiceRegister(id, name, address, port, checkTimeout, checkInterval string
 			Interval: checkInterval,
 		},
 	}
-	err = consulClient.Agent().ServiceRegister(&reg)
+	err := c.Conn.Agent().ServiceRegister(&reg)
 	if err != nil {
 		glog.Errorln("[Consul] Service register error: ", err.Error())
 		return false
 	}
 	glog.Infof("[Consul] Service [%s] register [%s, %s] in consul center %s\n",
-		reg.Name, reg.ID, reg.Address+":"+port, consulConf().Address)
+		reg.Name, reg.ID, reg.Address+":"+port, configs.GetConf().GetConsulAddr())
 	return true
 }
 
-func getAddrByServiceName(serviceName string) (string, error) {
-	consulClient, err := newConsulClient()
-	if err != nil {
-		return "", err
-	}
-	services, _, err := consulClient.Health().Service(serviceName, "grpc", true, nil)
+func (c *ConsulClient) GetAddrByServiceName(serviceName string) (string, error) {
+	services, _, err := c.Conn.Health().Service(serviceName, "grpc", true, nil)
 	if err != nil {
 		glog.Errorln("[Consul] Service recover error: ", err.Error())
 		return "", err
@@ -78,21 +67,22 @@ func getAddrByServiceName(serviceName string) (string, error) {
 	return addr, nil
 }
 
-func ServiceDeregister(serviceId string) {
-	consulClient, err := newConsulClient()
+func (c *ConsulClient) ServiceDeregister(serviceId string) error {
+	err := c.Conn.Agent().ServiceDeregister(serviceId)
 	if err != nil {
-		return
+		glog.Errorln("[Consul] Service deregister failed: ", err.Error())
+		return err
 	}
-	consulClient.Agent().ServiceDeregister(serviceId)
+	return nil
 }
 
-func ServiceRecover(serviceName string) (addr string, err error) {
+func (c *ConsulClient) ServiceRecover(serviceName string) (addr string, err error) {
 	var (
 		maxRetry      = 5
 		retryInterval = 1 * time.Second
 	)
 	for range maxRetry {
-		addr, err = getAddrByServiceName(serviceName)
+		addr, err = c.GetAddrByServiceName(serviceName)
 		if err == nil && addr != "" {
 			break
 		}
@@ -103,17 +93,13 @@ func ServiceRecover(serviceName string) (addr string, err error) {
 }
 
 // Consul configure management.
-func ConfigRecover(configPath string) (*configs.Config, error) {
+func (c *ConsulClient) ConfigRecover(configPath string) (*configs.Config, error) {
 	var (
 		err       error
 		cfg       configs.Config
 		lastIndex uint64
 	)
-	consulClient, err := newConsulClient()
-	if err != nil {
-		return nil, err
-	}
-	kv := consulClient.KV()
+	kv := c.Conn.KV()
 	data, meta, err := kv.Get(configPath, &api.QueryOptions{
 		WaitIndex: lastIndex,
 		WaitTime:  600 * time.Second,
@@ -134,12 +120,8 @@ func ConfigRecover(configPath string) (*configs.Config, error) {
 	return &cfg, nil
 }
 
-func ConfigQuery(configPath string) (*configs.Config, error) {
-	consulClient, err := newConsulClient()
-	if err != nil {
-		return nil, err
-	}
-	kv := consulClient.KV()
+func (c *ConsulClient) ConfigQuery(configPath string) (*configs.Config, error) {
+	kv := c.Conn.KV()
 	data, _, err := kv.Get(configPath, nil)
 	var cfg configs.Config
 	if err = yaml.Unmarshal(data.Value, &cfg); err != nil {

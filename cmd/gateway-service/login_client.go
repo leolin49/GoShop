@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	loginpb "goshop/api/protobuf/login"
-	"goshop/pkg/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,7 @@ var (
 func LoginClientStart() bool {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("login-service")
+	addr, err := consul.ServiceRecover("login-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
 		return false

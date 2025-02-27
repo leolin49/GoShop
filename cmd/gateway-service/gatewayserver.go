@@ -18,10 +18,10 @@ type GatewayServer struct {
 	MQClient *mq.RabbitMQ
 }
 
-
 var (
 	serverId string
-	localIp string
+	localIp  string
+	consul   *service.ConsulClient
 	server   *GatewayServer
 	once     sync.Once
 )
@@ -37,26 +37,34 @@ func GatewayServerGetInstance() *GatewayServer {
 func (s *GatewayServer) Init() bool {
 	var err error
 
-	// NOTE: Here, only get consul config.
+	// FIXME: Here, only get consul config.
 	if !configs.ParseConfig() {
 		glog.Errorln("[GatewayServer] parse config error.")
 		return false
 	}
 
-	cfg, err := service.ConfigQuery("gateway-service/" + serverId)
+	// Consul client
+	consul, err = service.NewConsulClient(&configs.GetConf().ConsulCfg)
+	if err != nil {
+		glog.Errorln("[GatewayServer] new consul client failed: ", err.Error())
+		return false
+	}
+
+	// Get config from consul
+	cfg, err := consul.ConfigQuery("gateway-service/" + serverId)
 	if err != nil {
 		glog.Errorln("[GatewayServer] recover config from consul error: ", err.Error())
 		return false
 	}
 
-	// service register
-	if !service.ServiceRegister(
-		serverId, 
-		"gateway-service", 
+	// Service register
+	if !consul.ServiceRegister(
+		serverId,
+		"gateway-service",
 		localIp,
 		cfg.GatewayCfg.Port,
-		"5s", 
-		"1s",
+		"5s",
+		"5s",
 	) {
 		glog.Errorln("[GatewayServer] consul register error.")
 		return false

@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"goshop/pkg/redis"
 
 	"gorm.io/gorm"
 )
@@ -19,8 +18,7 @@ func (c Cart) TableName() string {
 }
 
 type CartQuery struct {
-	db  *gorm.DB
-	rdb *redis.Rdb
+	db *gorm.DB
 }
 
 func NewCartQuery(db *gorm.DB) *CartQuery {

@@ -5,7 +5,9 @@ import (
 	"goshop/configs"
 	"goshop/models"
 	"goshop/pkg/mysql"
+	"goshop/pkg/redis"
 	service "goshop/pkg/service"
+	"os"
 	"sync"
 	"time"
 
@@ -16,12 +18,15 @@ import (
 
 type LoginServer struct {
 	service.Service
-	db *gorm.DB
 }
 
 var (
-	server *LoginServer
-	once   sync.Once
+	serverId string
+	consul   *service.ConsulClient
+	db       *gorm.DB
+	rdb      redis.IRdb
+	server   *LoginServer
+	once     sync.Once
 )
 
 func LoginServerGetInstance() *LoginServer {
@@ -34,35 +39,56 @@ func LoginServerGetInstance() *LoginServer {
 
 func (s *LoginServer) Init() bool {
 	var err error
+
 	// Parse config
 	if !configs.ParseConfig() {
 		glog.Errorln("[LoginServer] parse config error.")
 		return false
 	}
+
+	// Consul client
+	consul, err = service.NewConsulClient(&configs.GetConf().ConsulCfg)
+	if err != nil {
+		glog.Errorln("[GatewayServer] new consul client failed: ", err.Error())
+		return false
+	}
+
+	cfg, err := consul.ConfigQuery("login-service/" + serverId)
+	if err != nil {
+		glog.Errorln("[LoginServer] recover config from consul error: ", err.Error())
+		return false
+	}
+
 	// Rpc server
-	if !rpcServerStart() {
+	if !rpcServerStart(cfg) {
 		glog.Errorln("[LoginServer] rpc server start error.")
 		return false
 	}
 
-	// MySQL connect
-	if s.db, err = mysql.DatabaseInit(&configs.GetConf().MysqlCfg); err != nil {
-		glog.Errorln("[LoginServer] mysql database init error.")
-		return false
-	}
-	// MySQL table migrate
-	s.db.AutoMigrate(&models.User{})
-
 	// Rpc client
 	rpcClientsStart()
 
+	// MySQL cluster connect
+	if db, err = mysql.DBClusterInit(&cfg.MysqlClusterCfg); err != nil {
+		glog.Errorln("[LoginServer] mysql cluster init failed: ", err.Error())
+		return false
+	}
+	// MySQL table migrate
+	db.AutoMigrate(&models.User{})
+
+	// Redis connect
+	if rdb, err = redis.NewRedisClient(&cfg.RedisCfg); err != nil {
+		glog.Errorln("[LoginServer] redis database init failed: ", err.Error())
+		return false
+	}
+
 	// Consul register
-	if !service.ServiceRegister(
-		"1",
+	if !consul.ServiceRegister(
+		serverId,
 		"login-service",
-		configs.GetConf().LoginCfg.Host,
-		configs.GetConf().LoginCfg.Port,
-		"1s",
+		os.Getenv("LOCALIP"),
+		cfg.LoginCfg.Port,
+		"5s",
 		"5s",
 	) {
 		glog.Errorln("[LoginServer] consul register error.")
@@ -92,8 +118,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	flag.Set("v", "2")
-	flag.Parse()
+
+	{
+		flag.Set("v", "2")
+		flag.StringVar(&serverId, "node", "node1", "the name of the service instance")
+		flag.Parse()
+	}
 
 	LoginServerGetInstance().Main()
 	glog.Infoln("[LoginServer] server closed.")

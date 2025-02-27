@@ -7,6 +7,32 @@ mysql: # docker
   database: goshop
   charset: utf8mb4
 
+# docker-compose up -d
+mysql-cluster:
+  master:
+    dsnformat: "%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=true"
+    username: root
+    password: 123
+    host: 127.0.0.1
+    port: 3306
+    database: goshop
+    charset: utf8mb4
+  replicas:
+    - dsnformat: "%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=true"
+      username: root
+      password: 123
+      host: 127.0.0.1
+      port: 3311
+      database: goshop
+      charset: utf8mb4
+    - dsnformat: "%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=true"
+      username: root
+      password: 123
+      host: 127.0.0.1
+      port: 3312
+      database: goshop
+      charset: utf8mb4
+
 consul: # docker
   host: 127.0.0.1
   port: 8500
@@ -29,35 +55,43 @@ redis: # docker
   db: 0
 
 gateway-service:
+  name: gateway-service
   host: 10.255.103.106
   port: 8080
   mqname: checkout-queue
 
 login-service:
+  name: login-service
   host: 10.255.103.106
   port: 49000
 
 product-service:
+  name: product-service
   host: 10.255.103.106
   port: 49100
 
 cart-service:
+  name: cart-service
   host: 10.255.103.106
   port: 49200
 
 auth-service:
+  name: auth-service
   host: 10.255.103.106
   port: 49300
 
 pay-service:
+  name: pay-service
   host: 10.255.103.106
   port: 49400
 
 checkout-service:
+  name: checkout-service
   host: 10.255.103.106
   port: 49500
 
 order-service:
+  name: order-service
   host: 10.255.103.106
   port: 49600
 

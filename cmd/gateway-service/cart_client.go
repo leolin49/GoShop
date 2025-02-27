@@ -4,7 +4,6 @@ import (
 	"context"
 	cartpb "goshop/api/protobuf/cart"
 	errorcode "goshop/pkg/error"
-	"goshop/pkg/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,7 @@ var (
 func CartClientStart() bool {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("cart-service")
+	addr, err := consul.ServiceRecover("cart-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
 		return false

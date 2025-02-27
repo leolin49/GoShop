@@ -19,15 +19,15 @@ func httpServerStart(cfg *configs.Config) bool {
 
 	registerRoute(router)
 
+	addr := fmt.Sprintf("%s:%s", cfg.GatewayCfg.Host, cfg.GatewayCfg.Port)
 	go func() {
-		addr := fmt.Sprintf("%s:%s", cfg.GatewayCfg.Host, cfg.GatewayCfg.Port)
 		if err := router.Run(addr); err != nil {
 			glog.Errorln("[Gatewayserver] gin route run failed: ", err.Error())
 			return
 		}
 	}()
 
-	glog.Infoln("[Gatewayserver] http server start.")
+	glog.Infof("[Gatewayserver] http server start on [%s]\n", addr)
 	return true
 }
 

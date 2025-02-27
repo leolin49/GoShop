@@ -7,8 +7,7 @@
 2. TODO: 在checkout和pay，order等服务之间接入MQ，以实现异步通信和服务间解耦合；
 
 ### Consul 
-1. gateway实现了从consul配置中心读取配置；
-2. TODO: 需要实现consul长轮询读取配置，以实现热更新；
+1. gateway实现了从consul配置中心读取配置； 2. TODO: 需要实现consul长轮询读取配置，以实现热更新；
 3. TODO: 重构pkg/service/consul.go，将consul相关封装；
 4. TODO: 其他服务也需要改为从consul读取配置；
 
@@ -31,4 +30,18 @@
 ### .env
 1. TODO: 地址好像有问题
 
+### Mysql
+1. 实现了Mysql主从复制的配置和docker环境
+2. TODO: 使用gorm实现读写分离
+
+## 2025.02.27
+
+### login
+1. TODO: mysql读写分离 consul配置中心(DONE)
+
+### 代码重构
+2. gateway login
+
 > 已接入redis缓存的服务: cart checkout
+
+

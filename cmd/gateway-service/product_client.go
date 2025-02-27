@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	productpb "goshop/api/protobuf/product"
-	"goshop/pkg/service"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,7 +21,7 @@ var (
 func ProductClientStart() bool {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("product-service")
+	addr, err := consul.ServiceRecover("product-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
 		return false

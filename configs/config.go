@@ -11,18 +11,19 @@ import (
 var cfg *Config
 
 type Config struct {
-	MysqlCfg    MySQLConfig    `yaml:"mysql"`
-	ConsulCfg   ConsulConfig   `yaml:"consul"`
-	GatewayCfg  GatewayConfig  `yaml:"gateway-service"`
-	LoginCfg    ServiceConfig  `yaml:"login-service"`
-	AuthCfg     ServiceConfig  `yaml:"auth-service"`
-	ProductCfg  ServiceConfig  `yaml:"product-service"`
-	CartCfg     ServiceConfig  `yaml:"cart-service"`
-	PayCfg      ServiceConfig  `yaml:"pay-service"`
-	CheckoutCfg ServiceConfig  `yaml:"checkout-service"`
-	OrderCfg    ServiceConfig  `yaml:"order-service"`
-	RabbitMqCfg RabbitMQConfig `yaml:"rabbitmq"`
-	RedisCfg    RedisConfig    `yaml:"redis"`
+	MysqlCfg        MySQLConfig        `yaml:"mysql"`
+	ConsulCfg       ConsulConfig       `yaml:"consul"`
+	GatewayCfg      GatewayConfig      `yaml:"gateway-service"`
+	LoginCfg        ServiceConfig      `yaml:"login-service"`
+	AuthCfg         ServiceConfig      `yaml:"auth-service"`
+	ProductCfg      ServiceConfig      `yaml:"product-service"`
+	CartCfg         ServiceConfig      `yaml:"cart-service"`
+	PayCfg          ServiceConfig      `yaml:"pay-service"`
+	CheckoutCfg     ServiceConfig      `yaml:"checkout-service"`
+	OrderCfg        ServiceConfig      `yaml:"order-service"`
+	RabbitMqCfg     RabbitMQConfig     `yaml:"rabbitmq"`
+	RedisCfg        RedisConfig        `yaml:"redis"`
+	MysqlClusterCfg MySQLClusterConfig `yaml:"mysql-cluster"`
 }
 
 type MySQLConfig struct {
@@ -33,6 +34,22 @@ type MySQLConfig struct {
 	Host      string `yaml:"host"`
 	Port      int    `yaml:"port"`
 	Charset   string `yaml:"charset"`
+}
+
+func (cfg *MySQLConfig) GetDSN() string {
+	return fmt.Sprintf(cfg.DSNFormat,
+		cfg.Username,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.DataBase,
+		cfg.Charset,
+	)
+}
+
+type MySQLClusterConfig struct {
+	Master   MySQLConfig   `yaml:"master"`
+	Replicas []MySQLConfig `yaml:"replicas"`
 }
 
 type ConsulConfig struct {
@@ -99,4 +116,8 @@ func (c *Config) GetRabbitMQUrl() string {
 		c.RabbitMqCfg.Host,
 		c.RabbitMqCfg.Port,
 	)
+}
+
+func (c *Config) GetConsulAddr() string {
+	return fmt.Sprintf("%s:%s", c.ConsulCfg.Host, c.ConsulCfg.Port)
 }

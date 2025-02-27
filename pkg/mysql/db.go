@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 )
 
 func DatabaseInit(cfg *configs.MySQLConfig) (db *gorm.DB, err error) {
@@ -32,9 +33,50 @@ func DatabaseInit(cfg *configs.MySQLConfig) (db *gorm.DB, err error) {
 		SkipInitializeWithVersion: false,
 	}), &gorm.Config{})
 	if err != nil {
-		glog.Errorln("[LoginServer] mysql client init failed: ", err.Error())
+		glog.Errorln("[Mysql] client init failed: ", err.Error())
 		return nil, err
 	}
 
 	return dbconn, err
+}
+
+func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
+	var (
+		masterDSN = cfg.Master.GetDSN()
+		replicas  = cfg.Replicas
+	)
+	db, err := gorm.Open(
+		mysql.Open(masterDSN),
+		&gorm.Config{},
+	)
+	if err != nil {
+		glog.Errorln("[Mysql] cluster master init failed: ", err.Error())
+		return nil, err
+	}
+
+	var replicaDSNs []gorm.Dialector
+	for _, repl := range replicas {
+		replicaDSN := repl.GetDSN()
+		if replicaDSN == "" {
+			glog.Warning("[Mysql] replica DSN is empty, skipping: ", repl)
+			continue
+		}
+		replicaDSNs = append(replicaDSNs, mysql.Open(replicaDSN))
+	}
+
+	err = db.Use(dbresolver.Register(dbresolver.Config{
+		// use `db1` as sources, `db2`, `db3` as replicas
+		Sources:  []gorm.Dialector{mysql.Open(masterDSN)},
+		Replicas: replicaDSNs,
+		// sources/replicas load balancing policy
+		Policy: dbresolver.RandomPolicy{},
+		// print sources/replicas mode in logger
+		TraceResolverMode: true,
+	}))
+	if err != nil {
+		glog.Errorln("[Mysql] cluster replicas init failed: ", err.Error())
+		return nil, err
+	}
+
+	return db, nil
 }

@@ -3,7 +3,6 @@ package main
 import (
 	checkoutpb "goshop/api/protobuf/checkout"
 	paypb "goshop/api/protobuf/pay"
-	"goshop/pkg/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,7 @@ var (
 func CheckoutClientStart() bool {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("checkout-service")
+	addr, err := consul.ServiceRecover("checkout-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
 		return false

@@ -2,7 +2,6 @@ package main
 
 import (
 	authpb "goshop/api/protobuf/auth"
-	"goshop/pkg/service"
 
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
@@ -17,7 +16,7 @@ var (
 func AuthClientStart() bool {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("auth-service")
+	addr, err := consul.ServiceRecover("auth-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Authserver] consul service recover failed.")
 		return false
