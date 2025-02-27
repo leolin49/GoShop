@@ -111,7 +111,7 @@ func (s *LoginServer) Final() bool {
 
 func main() {
 	defer func() {
-		AuthClientClose()
+		rpcClientsClose()
 		glog.Flush()
 	}()
 	err := godotenv.Load()

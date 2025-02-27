@@ -18,22 +18,22 @@ var (
 	product_conn   *grpc.ClientConn
 )
 
-func ProductClientStart() bool {
+func ProductClientStart() error {
 	var err error
 	// get address from consul register center.
 	addr, err := consul.ServiceRecover("product-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
-		return false
+		return err
 	}
 	product_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Gatewayserver] new product rpc client error: ", err.Error())
-		return false
+		return err
 	}
 	product_client = productpb.NewProductServiceClient(product_conn)
 	glog.Infoln("[Gatewayserver] connect [product-service] server successful on: ", addr)
-	return true
+	return nil
 }
 
 func ProductClient() productpb.ProductServiceClient {

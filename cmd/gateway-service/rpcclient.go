@@ -4,30 +4,49 @@ import (
 	"github.com/golang/glog"
 )
 
-// TODO
-
 func rpcClientsStart() {
-	runClient := func(clientName string, clientFunc func() bool) {
-		if !clientFunc() {
-			glog.Errorf("[GatewayServer] %s rpc client start failed\n", clientName)
-		}
+
+	clients := []struct {
+		name      string
+		startFunc func() error
+	}{
+		{"login", LoginClientStart},
+		{"product", ProductClientStart},
+		{"cart", CartClientStart},
+		{"auth", AuthClientStart},
+		{"checkout", CheckoutClientStart},
 	}
-	go runClient("login", LoginClientStart)
-	go runClient("product", ProductClientStart)
-	go runClient("cart", CartClientStart)
-	go runClient("auth", AuthClientStart)
-	go runClient("checkout", CheckoutClientStart)
+
+	for _, client := range clients {
+		go func(clientName string, clientFunc func() error) {
+			if err := clientFunc(); err != nil {
+				return
+			}
+		}(client.name, client.startFunc)
+	}
+
 }
 
 func rpcClientsClose() {
-	closeClient := func(clientName string, clientFunc func() error) {
-		if err := clientFunc(); err != nil {
-			glog.Errorf("[GatewayServer] %s rpc client start failed: %s\n", clientName, clientName)
-		}
+
+	clients := []struct {
+		name      string
+		closeFunc func() error
+	}{
+		{"login", LoginClientClose},
+		{"product", ProductClientClose},
+		{"cart", CartClientClose},
+		{"auth", AuthClientClose},
+		{"checkout", CheckoutClientClose},
 	}
-	go closeClient("login", LoginClientClose)
-	go closeClient("product", ProductClientClose)
-	go closeClient("cart", CartClientClose)
-	go closeClient("auth", AuthClientClose)
-	go closeClient("checkout", CheckoutClientClose)
+
+	for _, client := range clients {
+		go func(clientName string, clientFunc func() error) {
+			if err := clientFunc(); err != nil {
+				glog.Errorf("[GatewayServer] %s rpc client start failed: %s\n", clientName)
+				return
+			}
+		}(client.name, client.closeFunc)
+	}
+
 }

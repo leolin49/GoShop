@@ -16,22 +16,22 @@ var (
 	login_conn   *grpc.ClientConn
 )
 
-func LoginClientStart() bool {
+func LoginClientStart() error {
 	var err error
 	// get address from consul register center.
 	addr, err := consul.ServiceRecover("login-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
-		return false
+		return err
 	}
 	login_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Gatewayserver] new login rpc client error: ", err.Error())
-		return false
+		return err
 	}
 	login_client = loginpb.NewLoginServiceClient(login_conn)
 	glog.Infoln("[Gatewayserver] connect [login-service] server successful on: ", addr)
-	return true
+	return nil
 }
 
 func LoginClient() loginpb.LoginServiceClient {

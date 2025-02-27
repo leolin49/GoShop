@@ -16,22 +16,22 @@ var (
 	checkout_conn   *grpc.ClientConn
 )
 
-func CheckoutClientStart() bool {
+func CheckoutClientStart() error {
 	var err error
 	// get address from consul register center.
 	addr, err := consul.ServiceRecover("checkout-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
-		return false
+		return err
 	}
 	checkout_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Gatewayserver] new cart rpc client error: ", err.Error())
-		return false
+		return err
 	}
 	checkout_client = checkoutpb.NewCheckoutServiceClient(checkout_conn)
 	glog.Infoln("[Gatewayserver] connect [checkout-service] server successful on: ", addr)
-	return true
+	return nil
 }
 
 func CheckoutClient() checkoutpb.CheckoutServiceClient {

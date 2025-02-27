@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	authpb "goshop/api/protobuf/auth"
+	"goshop/configs"
 	errorcode "goshop/pkg/error"
 	"goshop/pkg/util"
 	"net"
@@ -15,15 +17,16 @@ type AuthRpcService struct {
 	authpb.UnimplementedAuthServiceServer
 }
 
-func rpcServerStart() bool {
-	lis, err := net.Listen("tcp", ":49300")
+func rpcServerStart(cfg *configs.Config) bool {
+	addr := fmt.Sprintf("%s:%s", cfg.AuthCfg.Host, cfg.AuthCfg.Port)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("[AuthServer] rpcserver failed to listen: %v", err)
 		return false
 	}
 	rpcServer := grpc.NewServer()
 	authpb.RegisterAuthServiceServer(rpcServer, new(AuthRpcService))
-	glog.Infoln("[AuthServer] Starting rpc server on :49300")
+	glog.Infof("[AuthServer] Starting rpc server on [%s]\n", addr)
 	go func() {
 		if err := rpcServer.Serve(lis); err != nil {
 			glog.Fatalf("[AuthServer] rpcserver failed to start: %v", err)

@@ -16,8 +16,10 @@ type AuthServer struct {
 }
 
 var (
-	server *AuthServer
-	once   sync.Once
+	serverId string
+	server   *AuthServer
+	once     sync.Once
+	consul   *service.ConsulClient
 )
 
 func AuthServerGetInstance() *AuthServer {
@@ -29,20 +31,36 @@ func AuthServerGetInstance() *AuthServer {
 }
 
 func (s *AuthServer) Init() bool {
+	var err error
+
 	if !configs.ParseConfig() {
 		glog.Errorln("[AuthServer] parse config error.")
 		return false
 	}
-	if !rpcServerStart() {
+
+	// Consul client
+	consul, err = service.NewConsulClient(&configs.GetConf().ConsulCfg)
+	if err != nil {
+		glog.Errorln("[AuthServer] new consul client failed: ", err.Error())
+		return false
+	}
+	cfg, err := consul.ConfigQuery("auth-service/" + serverId)
+	if err != nil {
+		glog.Errorln("[AuthServer] recover config from consul error: ", err.Error())
+		return false
+	}
+
+	if !rpcServerStart(cfg) {
 		glog.Errorln("[AuthServer] rpc server start error.")
 		return false
 	}
+
 	// Consul register
-	if !service.ServiceRegister(
-		"1",
+	if !consul.ServiceRegister(
+		serverId,
 		"auth-service",
-		configs.GetConf().AuthCfg.Host,
-		configs.GetConf().AuthCfg.Port,
+		cfg.AuthCfg.Host,
+		cfg.AuthCfg.Port,
 		"1s",
 		"5s",
 	) {
@@ -71,8 +89,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	flag.Set("v", "2")
-	flag.Parse()
+	{
+		flag.Set("v", "2")
+		flag.StringVar(&serverId, "node", "node1", "the name of the service instance")
+		flag.Parse()
+	}
 
 	AuthServerGetInstance().Main()
 	glog.Infoln("[AuthServer] server closed.")

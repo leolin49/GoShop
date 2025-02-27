@@ -9,28 +9,32 @@ import (
 )
 
 var (
-	auth_client authpb.AuthServiceClient
-	auth_conn   *grpc.ClientConn
+	authClient authpb.AuthServiceClient
+	authConn   *grpc.ClientConn
 )
 
-func AuthClientStart() bool {
+func AuthClientStart() error {
 	var err error
 	// get address from consul register center.
 	addr, err := consul.ServiceRecover("auth-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Authserver] consul service recover failed.")
-		return false
+		return err
 	}
-	auth_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	authConn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Authserver] new login rpc client error: ", err.Error())
-		return false
+		return err
 	}
-	auth_client = authpb.NewAuthServiceClient(auth_conn)
+	authClient = authpb.NewAuthServiceClient(authConn)
 	glog.Infoln("[Authserver] connect [auth-service] server successful on: ", addr)
-	return true
+	return nil
 }
 
-func AuthClient() authpb.AuthServiceClient { return auth_client }
+func AuthClient() authpb.AuthServiceClient {
+	return authClient
+}
 
-func AuthClientClose() { auth_conn.Close() }
+func AuthClientClose() error {
+	return authConn.Close()
+}

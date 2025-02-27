@@ -1,7 +1,6 @@
 package grpc
 
 type GrpcServer interface {
-	Start (address string) error
-	Stop () error
+	Start(address string) error
+	Stop() error
 }
-

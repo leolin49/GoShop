@@ -13,10 +13,10 @@ type IGrpcClient interface {
 }
 
 type GrpcClient struct {
-	ServiceName	string
-	Address		string
-	Conn		*grpc.ClientConn
-	Client		interface{}
+	ServiceName string
+	Address     string
+	Conn        *grpc.ClientConn
+	Client      interface{}
 	NewClient   func(conn *grpc.ClientConn) interface{}
 }
 
@@ -41,4 +41,3 @@ func (c *GrpcClient) Close() error {
 func (c *GrpcClient) GetInstance() interface{} {
 	return c.Client
 }
-

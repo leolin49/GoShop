@@ -17,22 +17,22 @@ var (
 	cart_conn   *grpc.ClientConn
 )
 
-func CartClientStart() bool {
+func CartClientStart() error {
 	var err error
 	// get address from consul register center.
 	addr, err := consul.ServiceRecover("cart-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
-		return false
+		return err
 	}
 	cart_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Gatewayserver] new cart rpc client error: ", err.Error())
-		return false
+		return err
 	}
 	cart_client = cartpb.NewCartServiceClient(cart_conn)
 	glog.Infoln("[Gatewayserver] connect [cart-service] server successful on: ", addr)
-	return true
+	return nil
 }
 
 func CartClient() cartpb.CartServiceClient {
