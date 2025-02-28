@@ -8,6 +8,7 @@ import (
 	"goshop/configs"
 	"goshop/models"
 	errorcode "goshop/pkg/error"
+	"goshop/pkg/util"
 	"net"
 
 	"github.com/golang/glog"
@@ -21,10 +22,11 @@ type LoginRpcService struct {
 func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegisterUser) (*loginpb.RspRegisterUser, error) {
 	var err error
 	// Create the user record.
+	Md5Pwd := util.MD5WithSaltFun(req.Password, nil)
 	user := &models.User{
 		Email:    req.Email,
 		Name:     req.Username,
-		Password: req.Password,
+		Password: Md5Pwd,
 	}
 	err = models.NewUserQuery(db).CreateUser(user)
 	if err != nil {
