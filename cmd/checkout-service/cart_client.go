@@ -19,22 +19,22 @@ func CartClientStart() error {
 	addr, err := consul.ServiceRecover("cart-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Checkoutserver] consul service recover failed.")
-		return err 
+		return err
 	}
 	cart_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Checkoutserver] new cart rpc client error: ", err.Error())
-		return err 
+		return err
 	}
 	cart_client = cartpb.NewCartServiceClient(cart_conn)
 	glog.Infoln("[Checkoutserver] connect [cart-service] server successful on: ", addr)
-	return nil 
+	return nil
 }
 
-func CartClient() cartpb.CartServiceClient { 
-	return cart_client 
+func CartClient() cartpb.CartServiceClient {
+	return cart_client
 }
 
-func CartClientClose() error { 
+func CartClientClose() error {
 	return cart_conn.Close()
 }

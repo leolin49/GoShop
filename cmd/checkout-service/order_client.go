@@ -19,16 +19,16 @@ func OrderClientStart() error {
 	addr, err := consul.ServiceRecover("order-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Checkoutserver] consul service recover failed.")
-		return err 
+		return err
 	}
 	order_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Checkoutserver] new cart rpc client error: ", err.Error())
-		return err 
+		return err
 	}
 	order_client = orderpb.NewOrderServiceClient(order_conn)
 	glog.Infoln("[Checkoutserver] connect [order-service] server successful on: ", addr)
-	return nil 
+	return nil
 }
 
 func OrderClient() orderpb.OrderServiceClient { return order_client }

@@ -25,9 +25,9 @@ var (
 	serverName  string
 	consul      *service.ConsulClient
 	db          *gorm.DB
-	rdb    redis.IRdb
-	server *CheckoutServer
-	once   sync.Once
+	rdb         redis.IRdb
+	server      *CheckoutServer
+	once        sync.Once
 )
 
 func CheckoutServerGetInstance() *CheckoutServer {

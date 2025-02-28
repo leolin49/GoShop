@@ -19,7 +19,7 @@ type Config struct {
 	ProductCfg      ServiceConfig      `yaml:"product-service"`
 	CartCfg         ServiceConfig      `yaml:"cart-service"`
 	PayCfg          ServiceConfig      `yaml:"pay-service"`
-	CheckoutCfg     CheckoutConfig		`yaml:"checkout-service"`
+	CheckoutCfg     CheckoutConfig     `yaml:"checkout-service"`
 	OrderCfg        ServiceConfig      `yaml:"order-service"`
 	RabbitMqCfg     RabbitMQConfig     `yaml:"rabbitmq"`
 	RedisCfg        RedisConfig        `yaml:"redis"`

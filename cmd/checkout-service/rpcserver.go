@@ -135,4 +135,3 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 		TransactionId: payRet.TransactionId,
 	}, nil
 }
-

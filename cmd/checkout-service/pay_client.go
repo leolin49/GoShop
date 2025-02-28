@@ -28,7 +28,7 @@ func PayClientStart() error {
 	}
 	pay_client = paypb.NewPayServiceClient(pay_conn)
 	glog.Infoln("[Checkoutserver] connect [pay-service] server successful on: ", addr)
-	return nil 
+	return nil
 }
 
 func PayClient() paypb.PayServiceClient { return pay_client }

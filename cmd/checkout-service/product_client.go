@@ -19,16 +19,16 @@ func ProductClientStart() error {
 	addr, err := consul.ServiceRecover("product-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Checkoutserver] consul service recover failed.")
-		return err 
+		return err
 	}
 	product_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Checkoutserver] new product rpc client error: ", err.Error())
-		return err 
+		return err
 	}
 	product_client = productpb.NewProductServiceClient(product_conn)
 	glog.Infoln("[Checkoutserver] connect [product-service] server successful on: ", addr)
-	return nil 
+	return nil
 }
 
 func ProductClient() productpb.ProductServiceClient { return product_client }

@@ -42,9 +42,9 @@ func DatabaseInit(cfg *configs.MySQLConfig) (db *gorm.DB, err error) {
 
 func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
 	var (
-		masterDSN = cfg.Master.GetDSN()
-		replicas  = cfg.Replicas
-		replicaDSNs []string
+		masterDSN          = cfg.Master.GetDSN()
+		replicas           = cfg.Replicas
+		replicaDSNs        []string
 		replicasDialectors []gorm.Dialector
 	)
 	db, err := gorm.Open(

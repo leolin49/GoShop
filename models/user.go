@@ -93,7 +93,7 @@ func (q *UserQuery) CreateUser(user *User) error {
 			tx.Rollback()
 			return tx.Error
 		}
-		
+
 		// commit transaction
 		return nil
 	})
