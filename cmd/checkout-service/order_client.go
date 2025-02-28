@@ -2,7 +2,6 @@ package main
 
 import (
 	orderpb "goshop/api/protobuf/order"
-	"goshop/pkg/service"
 
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
@@ -14,24 +13,24 @@ var (
 	order_conn   *grpc.ClientConn
 )
 
-func OrderClientStart() bool {
+func OrderClientStart() error {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("order-service")
+	addr, err := consul.ServiceRecover("order-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Checkoutserver] consul service recover failed.")
-		return false
+		return err 
 	}
 	order_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Checkoutserver] new cart rpc client error: ", err.Error())
-		return false
+		return err 
 	}
 	order_client = orderpb.NewOrderServiceClient(order_conn)
 	glog.Infoln("[Checkoutserver] connect [order-service] server successful on: ", addr)
-	return true
+	return nil 
 }
 
 func OrderClient() orderpb.OrderServiceClient { return order_client }
 
-func OrderClientClose() { order_conn.Close() }
+func OrderClientClose() error { return order_conn.Close() }

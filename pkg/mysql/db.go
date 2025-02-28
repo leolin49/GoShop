@@ -44,6 +44,8 @@ func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
 	var (
 		masterDSN = cfg.Master.GetDSN()
 		replicas  = cfg.Replicas
+		replicaDSNs []string
+		replicasDialectors []gorm.Dialector
 	)
 	db, err := gorm.Open(
 		mysql.Open(masterDSN),
@@ -54,20 +56,20 @@ func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	var replicaDSNs []gorm.Dialector
 	for _, repl := range replicas {
 		replicaDSN := repl.GetDSN()
 		if replicaDSN == "" {
 			glog.Warning("[Mysql] replica DSN is empty, skipping: ", repl)
 			continue
 		}
-		replicaDSNs = append(replicaDSNs, mysql.Open(replicaDSN))
+		replicaDSNs = append(replicaDSNs, replicaDSN)
+		replicasDialectors = append(replicasDialectors, mysql.Open(replicaDSN))
 	}
 
 	err = db.Use(dbresolver.Register(dbresolver.Config{
 		// use `db1` as sources, `db2`, `db3` as replicas
 		Sources:  []gorm.Dialector{mysql.Open(masterDSN)},
-		Replicas: replicaDSNs,
+		Replicas: replicasDialectors,
 		// sources/replicas load balancing policy
 		Policy: dbresolver.RandomPolicy{},
 		// print sources/replicas mode in logger
@@ -77,6 +79,7 @@ func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
 		glog.Errorln("[Mysql] cluster replicas init failed: ", err.Error())
 		return nil, err
 	}
+	glog.Infof("[Mysql] cluster init success: Master=[%s], Replicas=[%v]\n", masterDSN, replicaDSNs)
 
 	return db, nil
 }

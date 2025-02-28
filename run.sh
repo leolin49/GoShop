@@ -170,7 +170,7 @@ run_service() {
 stop_service() {
 	service_name="$1"
 	echo "Stopping ${service_name}-service..."
-	pkill -f "${BIN}/${service_name}-service" 
+	pkill -9 -f "${BIN}/${service_name}-service" 
 	echo "${service_name}-service already stopped."
 }
 

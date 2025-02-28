@@ -5,20 +5,46 @@ import (
 )
 
 func rpcClientsStart() {
-	runClient := func(clientName string, clientFunc func() bool) {
-		if !clientFunc() {
-			glog.Errorf("[CheckoutServer] %s rpc client start failed\n", clientName)
-		}
+
+	clients := []struct {
+		name      string
+		startFunc func() error
+	}{
+		{"product", ProductClientStart},
+		{"cart", CartClientStart},
+		{"order", OrderClientStart},
+		{"pay", PayClientStart},
 	}
-	go runClient("product", ProductClientStart)
-	go runClient("cart", CartClientStart)
-	go runClient("pay", PayClientStart)
-	go runClient("order", OrderClientStart)
+
+	for _, client := range clients {
+		go func(clientName string, clientFunc func() error) {
+			if err := clientFunc(); err != nil {
+				return
+			}
+		}(client.name, client.startFunc)
+	}
+
 }
 
-func rpcClientClose() {
-	ProductClientClose()
-	CartClientClose()
-	PayClientClose()
-	OrderClientClose()
+func rpcClientsClose() {
+
+	clients := []struct {
+		name      string
+		closeFunc func() error
+	}{
+		{"product", ProductClientClose},
+		{"cart", CartClientClose},
+		{"order", OrderClientClose},
+		{"pay", PayClientClose},
+	}
+
+	for _, client := range clients {
+		go func(clientName string, clientFunc func() error) {
+			if err := clientFunc(); err != nil {
+				glog.Errorf("[GatewayServer] %s rpc client start failed: %s\n", clientName)
+				return
+			}
+		}(client.name, client.closeFunc)
+	}
+
 }

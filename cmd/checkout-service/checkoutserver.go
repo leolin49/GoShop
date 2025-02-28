@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"goshop/configs"
+	"goshop/models"
+	"goshop/pkg/mysql"
 	"goshop/pkg/redis"
 	service "goshop/pkg/service"
 	"sync"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 type CheckoutServer struct {
@@ -17,6 +20,11 @@ type CheckoutServer struct {
 }
 
 var (
+	serviceName string = "checkout-service"
+	serverId    string
+	serverName  string
+	consul      *service.ConsulClient
+	db          *gorm.DB
 	rdb    redis.IRdb
 	server *CheckoutServer
 	once   sync.Once
@@ -32,20 +40,41 @@ func CheckoutServerGetInstance() *CheckoutServer {
 
 func (s *CheckoutServer) Init() bool {
 	var err error
+	serverName = serviceName + "/" + serverId
+
 	if !configs.ParseConfig() {
 		glog.Errorln("[CheckoutServer] parse config error.")
 		return false
 	}
-	if !rpcServerStart() {
+
+	// Consul client
+	consul, err = service.NewConsulClient(&configs.GetConf().ConsulCfg)
+	if err != nil {
+		glog.Errorln("[CheckoutServer] new consul client failed: ", err.Error())
+		return false
+	}
+
+	cfg, err := consul.ConfigQuery(serverName)
+	if err != nil {
+		glog.Errorln("[CheckoutServer] recover config from consul error: ", err.Error())
+		return false
+	}
+
+	if !rpcServerStart(cfg) {
 		glog.Errorln("[CheckoutServer] rpc server start error.")
 		return false
 	}
 
-	// mysql
-	if !mysqlDatabaseInit() {
-		glog.Errorln("[CheckoutServer] mysql database init error.")
+	// rpc clients
+	rpcClientsStart()
+
+	// MySQL connect
+	if db, err = mysql.DBClusterInit(&cfg.MysqlClusterCfg); err != nil {
+		glog.Errorln("[CartServer] mysql database init error.")
 		return false
 	}
+	// MySQL table migrate
+	db.AutoMigrate(&models.PaymentLog{})
 
 	// redis
 	if rdb, err = redis.NewRedisClient(&configs.GetConf().RedisCfg); err != nil {
@@ -53,18 +82,15 @@ func (s *CheckoutServer) Init() bool {
 		return false
 	}
 
-	// rpc clients
-	rpcClientsStart()
-
 	// RabbitMQ consume
-	go rabbitConsumer("checkout-queue", configs.GetConf().GetRabbitMQUrl())
+	go rabbitConsumer(cfg.CheckoutCfg.MqName, cfg.GetRabbitMQUrl())
 
 	// Consul register
-	if !service.ServiceRegister(
-		"1",
-		"checkout-service",
-		configs.GetConf().CheckoutCfg.Host,
-		configs.GetConf().CheckoutCfg.Port,
+	if !consul.ServiceRegister(
+		serverId,
+		serviceName,
+		cfg.CheckoutCfg.Host,
+		cfg.CheckoutCfg.Port,
 		"1s",
 		"5s",
 	) {
@@ -87,15 +113,19 @@ func (s *CheckoutServer) Final() bool {
 
 func main() {
 	defer func() {
-		rpcClientClose()
+		rpcClientsClose()
+		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
 	err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
-	flag.Set("v", "2")
-	flag.Parse()
+	{
+		flag.Set("v", "2")
+		flag.StringVar(&serverId, "node", "node1", "the name of the service instance")
+		flag.Parse()
+	}
 	CheckoutServerGetInstance().Main()
 	glog.Infoln("[CheckoutServer] server closed.")
 }

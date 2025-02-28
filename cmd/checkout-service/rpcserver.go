@@ -8,6 +8,7 @@ import (
 	orderpb "goshop/api/protobuf/order"
 	paypb "goshop/api/protobuf/pay"
 	productpb "goshop/api/protobuf/product"
+	"goshop/configs"
 	"net"
 
 	"github.com/golang/glog"
@@ -18,15 +19,16 @@ type CheckoutRpcService struct {
 	checkoutpb.UnimplementedCheckoutServiceServer
 }
 
-func rpcServerStart() bool {
-	lis, err := net.Listen("tcp", ":49500")
+func rpcServerStart(cfg *configs.Config) bool {
+	addr := fmt.Sprintf("%s:%s", cfg.CheckoutCfg.Host, cfg.CheckoutCfg.Port)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("[CheckoutServer] rpcserver failed to listen: %v", err)
 		return false
 	}
 	rpcServer := grpc.NewServer()
 	checkoutpb.RegisterCheckoutServiceServer(rpcServer, new(CheckoutRpcService))
-	glog.Infoln("[CheckoutServer] Starting rpc server on :49500")
+	glog.Infof("[CheckoutServer] Starting rpc server on [%s]\n", addr)
 	go func() {
 		if err := rpcServer.Serve(lis); err != nil {
 			glog.Fatalf("[CheckoutServer] rpcserver failed to start: %v", err)
@@ -133,3 +135,4 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 		TransactionId: payRet.TransactionId,
 	}, nil
 }
+

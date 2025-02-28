@@ -40,6 +40,7 @@ func LoginServerGetInstance() *LoginServer {
 
 func (s *LoginServer) Init() bool {
 	var err error
+	serverName = serviceName + "/" + serverId
 
 	// Parse config
 	if !configs.ParseConfig() {
@@ -113,7 +114,7 @@ func (s *LoginServer) Final() bool {
 func main() {
 	defer func() {
 		rpcClientsClose()
-		_ = consul.ServiceDeregister(serviceName)
+		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

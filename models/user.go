@@ -20,8 +20,13 @@ type User struct {
 	Address     *string
 }
 
-func (u User) TableName() string {
+func (u *User) TableName() string {
 	return "user"
+}
+
+// NOTE: Hook function
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	return nil
 }
 
 type UserQuery struct {
@@ -52,18 +57,6 @@ func NewUserQueryWithDBName(db *gorm.DB, dbName string) *UserQuery {
 	}
 }
 
-func (q *UserQuery) GetUserIdByEmail(email string) (uint32, error) {
-	var user User
-	err := q.db.Model(User{}).Where("email = ?", email).First(&user).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 0, nil
-		}
-		return 0, err
-	}
-	return uint32(user.ID), nil
-}
-
 func (q *UserQuery) GetIdAndPwdByEmail(email string) (uint32, string, error) {
 	var user User
 	err := q.db.Select("id, password").Where("email = ?", email).First(&user).Error
@@ -77,19 +70,31 @@ func (q *UserQuery) GetIdAndPwdByEmail(email string) (uint32, string, error) {
 	return uint32(user.ID), user.Password, nil
 }
 
-func (q *UserQuery) CreateUser(user *User) (uint32, error) {
-	// check again
-	if user_id, err := q.GetUserIdByEmail(user.Email); err != nil {
-		return 0, err
-	} else if user_id == 0 {
-		return 0, errors.New(
-			fmt.Sprintf("create user failed cause user [%s] already exist", user.Email),
-		)
-	}
-	// create
-	err := q.db.Create(user).Error
-	if err != nil {
-		return 0, err
-	}
-	return q.GetUserIdByEmail(user.Email)
+func (q *UserQuery) GetUserIdByEmail(email string) (userId uint32, err error) {
+	err = q.db.Model(&User{}).Select("id").Where("email = ?", email).First(&userId).Error
+	return
+}
+
+func (q *UserQuery) CreateUser(user *User) error {
+	return q.db.Transaction(func(tx *gorm.DB) error {
+		// check
+		var checkUserId uint32
+		if err := tx.Model(&User{}).Select("id").Where("email = ?", user.Email).First(&checkUserId).Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				return err
+			}
+		} else if checkUserId > 0 {
+			return errors.New(
+				fmt.Sprintf("create user [%d] failed cause user [%v] already exist", checkUserId, user),
+			)
+		}
+		// create
+		if err := tx.Create(user).Error; err != nil {
+			tx.Rollback()
+			return tx.Error
+		}
+		
+		// commit transaction
+		return nil
+	})
 }

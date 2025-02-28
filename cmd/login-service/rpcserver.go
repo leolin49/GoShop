@@ -19,24 +19,21 @@ type LoginRpcService struct {
 }
 
 func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegisterUser) (*loginpb.RspRegisterUser, error) {
-	var (
-		user_id uint32
-		err     error
-	)
+	var err error
 	// Create the user record.
 	user := &models.User{
 		Email:    req.Email,
 		Name:     req.Username,
 		Password: req.Password,
 	}
-	user_id, err = models.NewUserQueryWrite(db).CreateUser(user)
+	err = models.NewUserQuery(db).CreateUser(user)
 	if err != nil {
 		return nil, err
 	}
 
 	return &loginpb.RspRegisterUser{
 		ErrorCode: errorcode.Ok,
-		UserId:    user_id,
+		UserId:    uint32(user.ID),
 	}, nil
 }
 

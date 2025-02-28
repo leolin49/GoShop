@@ -2,7 +2,6 @@ package main
 
 import (
 	cartpb "goshop/api/protobuf/cart"
-	"goshop/pkg/service"
 
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
@@ -14,24 +13,28 @@ var (
 	cart_conn   *grpc.ClientConn
 )
 
-func CartClientStart() bool {
+func CartClientStart() error {
 	var err error
 	// get address from consul register center.
-	addr, err := service.ServiceRecover("cart-service")
+	addr, err := consul.ServiceRecover("cart-service")
 	if err != nil || addr == "" {
 		glog.Errorln("[Checkoutserver] consul service recover failed.")
-		return false
+		return err 
 	}
 	cart_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorln("[Checkoutserver] new cart rpc client error: ", err.Error())
-		return false
+		return err 
 	}
 	cart_client = cartpb.NewCartServiceClient(cart_conn)
 	glog.Infoln("[Checkoutserver] connect [cart-service] server successful on: ", addr)
-	return true
+	return nil 
 }
 
-func CartClient() cartpb.CartServiceClient { return cart_client }
+func CartClient() cartpb.CartServiceClient { 
+	return cart_client 
+}
 
-func CartClientClose() { cart_conn.Close() }
+func CartClientClose() error { 
+	return cart_conn.Close()
+}
