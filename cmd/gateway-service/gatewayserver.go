@@ -19,11 +19,13 @@ type GatewayServer struct {
 }
 
 var (
-	serverId string
-	localIp  string
-	consul   *service.ConsulClient
-	server   *GatewayServer
-	once     sync.Once
+	serviceName string = "gateway-service"
+	serverName  string
+	serverId    string
+	localIp     string
+	consul      *service.ConsulClient
+	server      *GatewayServer
+	once        sync.Once
 )
 
 func GatewayServerGetInstance() *GatewayServer {
@@ -36,6 +38,7 @@ func GatewayServerGetInstance() *GatewayServer {
 
 func (s *GatewayServer) Init() bool {
 	var err error
+	serverName = serviceName + "/" + serverId
 
 	// FIXME: Here, only get consul config.
 	if !configs.ParseConfig() {
@@ -51,7 +54,7 @@ func (s *GatewayServer) Init() bool {
 	}
 
 	// Get config from consul
-	cfg, err := consul.ConfigQuery("gateway-service/" + serverId)
+	cfg, err := consul.ConfigQuery(serverName)
 	if err != nil {
 		glog.Errorln("[GatewayServer] recover config from consul error: ", err.Error())
 		return false
@@ -60,7 +63,7 @@ func (s *GatewayServer) Init() bool {
 	// Service register
 	if !consul.ServiceRegister(
 		serverId,
-		"gateway-service",
+		serviceName,
 		localIp,
 		cfg.GatewayCfg.Port,
 		"5s",
@@ -101,7 +104,7 @@ func (s *GatewayServer) Final() bool {
 func main() {
 	defer func() {
 		rpcClientsClose()
-		_ = consul.ServiceDeregister(serverId)
+		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
 

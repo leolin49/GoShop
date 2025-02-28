@@ -20,12 +20,14 @@ type ProductServer struct {
 }
 
 var (
-	serverId string
-	consul   *service.ConsulClient
-	db       *gorm.DB
-	rdb      redis.IRdb
-	server   *ProductServer
-	once     sync.Once
+	serviceName = "product-service"
+	serverName  string
+	serverId    string
+	consul      *service.ConsulClient
+	db          *gorm.DB
+	rdb         redis.IRdb
+	server      *ProductServer
+	once        sync.Once
 )
 
 func ProductServerGetInstance() *ProductServer {
@@ -38,6 +40,7 @@ func ProductServerGetInstance() *ProductServer {
 
 func (s *ProductServer) Init() bool {
 	var err error
+	serverName = serviceName + "/" + serverId
 
 	if !configs.ParseConfig() {
 		glog.Errorln("[ProductServer] parse config error.")
@@ -51,7 +54,7 @@ func (s *ProductServer) Init() bool {
 		return false
 	}
 
-	cfg, err := consul.ConfigQuery("product-service/" + serverId)
+	cfg, err := consul.ConfigQuery(serverName)
 	if err != nil {
 		glog.Errorln("[ProductServer] recover config from consul error: ", err.Error())
 		return false
@@ -80,7 +83,7 @@ func (s *ProductServer) Init() bool {
 	// Consul register
 	if !consul.ServiceRegister(
 		serverId,
-		"product-service",
+		serviceName,
 		cfg.ProductCfg.Host,
 		cfg.ProductCfg.Port,
 		"1s",
@@ -106,7 +109,7 @@ func (s *ProductServer) Final() bool {
 
 func main() {
 	defer func() {
-		_ = consul.ServiceDeregister(serverId)
+		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

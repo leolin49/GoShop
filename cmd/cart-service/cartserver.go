@@ -20,12 +20,14 @@ type CartServer struct {
 }
 
 var (
-	serverId string
-	consul   *service.ConsulClient
-	server   *CartServer
-	db       *gorm.DB
-	rdb      redis.IRdb
-	once     sync.Once
+	serviceName string = "cart-service"
+	serverId    string
+	serverName  string
+	consul      *service.ConsulClient
+	server      *CartServer
+	db          *gorm.DB
+	rdb         redis.IRdb
+	once        sync.Once
 )
 
 func CartServerGetInstance() *CartServer {
@@ -38,6 +40,8 @@ func CartServerGetInstance() *CartServer {
 
 func (s *CartServer) Init() bool {
 	var err error
+	serverName = serviceName + "/" + serverId
+
 	if !configs.ParseConfig() {
 		glog.Errorln("[CartServer] parse config error.")
 		return false
@@ -50,7 +54,7 @@ func (s *CartServer) Init() bool {
 		return false
 	}
 
-	cfg, err := consul.ConfigQuery("cart-service/" + serverId)
+	cfg, err := consul.ConfigQuery(serverName)
 	if err != nil {
 		glog.Errorln("[CartServer] recover config from consul error: ", err.Error())
 		return false
@@ -81,7 +85,7 @@ func (s *CartServer) Init() bool {
 	// Consul register
 	if !consul.ServiceRegister(
 		serverId,
-		"cart-service",
+		serviceName,
 		cfg.CartCfg.Host,
 		cfg.CartCfg.Port,
 		"1s",
@@ -102,7 +106,7 @@ func (s *CartServer) Final() bool { return true }
 func main() {
 	defer func() {
 		rpcClientsClose()
-		_ = consul.ServiceDeregister(serverId)
+		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

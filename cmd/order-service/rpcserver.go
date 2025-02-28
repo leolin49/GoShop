@@ -5,6 +5,7 @@ import (
 	"fmt"
 	cartpb "goshop/api/protobuf/cart"
 	orderpb "goshop/api/protobuf/order"
+	"goshop/configs"
 	"goshop/models"
 	"net"
 
@@ -18,8 +19,9 @@ type OrderRpcService struct {
 	orderpb.UnimplementedOrderServiceServer
 }
 
-func rpcServerStart() bool {
-	lis, err := net.Listen("tcp", ":49600")
+func rpcServerStart(cfg *configs.Config) bool {
+	addr := fmt.Sprintf("%s:%s", cfg.OrderCfg.Host, cfg.OrderCfg.Port)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("[OrderServer] rpcserver failed to listen: %v", err)
 		return false
@@ -42,7 +44,7 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 		return
 	}
 
-	err = Mysql().Transaction(func(tx *gorm.DB) error {
+	err = db.Transaction(func(tx *gorm.DB) error {
 		orderId, _ := uuid.NewUUID()
 
 		order := &models.Order{
@@ -92,7 +94,7 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 }
 
 func (s *OrderRpcService) ListOrder(ctx context.Context, req *orderpb.ReqListOrder) (*orderpb.RspListOrder, error) {
-	list, err := models.NewOrderQuery(Mysql()).ListOrder(req.UserId)
+	list, err := models.NewOrderQuery(db).ListOrder(req.UserId)
 	if err != nil {
 		return nil, err
 	}

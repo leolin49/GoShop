@@ -16,10 +16,12 @@ type AuthServer struct {
 }
 
 var (
-	serverId string
-	server   *AuthServer
-	once     sync.Once
-	consul   *service.ConsulClient
+	serviceName = "auth-service"
+	serverName  string
+	serverId    string
+	server      *AuthServer
+	once        sync.Once
+	consul      *service.ConsulClient
 )
 
 func AuthServerGetInstance() *AuthServer {
@@ -32,6 +34,7 @@ func AuthServerGetInstance() *AuthServer {
 
 func (s *AuthServer) Init() bool {
 	var err error
+	serverName = serviceName + "/" + serverId
 
 	if !configs.ParseConfig() {
 		glog.Errorln("[AuthServer] parse config error.")
@@ -44,7 +47,7 @@ func (s *AuthServer) Init() bool {
 		glog.Errorln("[AuthServer] new consul client failed: ", err.Error())
 		return false
 	}
-	cfg, err := consul.ConfigQuery("auth-service/" + serverId)
+	cfg, err := consul.ConfigQuery(serverName)
 	if err != nil {
 		glog.Errorln("[AuthServer] recover config from consul error: ", err.Error())
 		return false
@@ -58,7 +61,7 @@ func (s *AuthServer) Init() bool {
 	// Consul register
 	if !consul.ServiceRegister(
 		serverId,
-		"auth-service",
+		serviceName,
 		cfg.AuthCfg.Host,
 		cfg.AuthCfg.Port,
 		"1s",
@@ -83,7 +86,7 @@ func (s *AuthServer) Final() bool {
 
 func main() {
 	defer func() {
-		_ = consul.ServiceDeregister(serverId)
+		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

@@ -20,12 +20,14 @@ type LoginServer struct {
 }
 
 var (
-	serverId string
-	consul   *service.ConsulClient
-	db       *gorm.DB
-	rdb      redis.IRdb
-	server   *LoginServer
-	once     sync.Once
+	serviceName string = "login-service"
+	serverName  string
+	serverId    string
+	consul      *service.ConsulClient
+	db          *gorm.DB
+	rdb         redis.IRdb
+	server      *LoginServer
+	once        sync.Once
 )
 
 func LoginServerGetInstance() *LoginServer {
@@ -52,7 +54,7 @@ func (s *LoginServer) Init() bool {
 		return false
 	}
 
-	cfg, err := consul.ConfigQuery("login-service/" + serverId)
+	cfg, err := consul.ConfigQuery(serverName)
 	if err != nil {
 		glog.Errorln("[LoginServer] recover config from consul error: ", err.Error())
 		return false
@@ -84,7 +86,7 @@ func (s *LoginServer) Init() bool {
 	// Consul register
 	if !consul.ServiceRegister(
 		serverId,
-		"login-service",
+		serviceName,
 		cfg.LoginCfg.Host,
 		cfg.LoginCfg.Port,
 		"5s",
@@ -111,7 +113,7 @@ func (s *LoginServer) Final() bool {
 func main() {
 	defer func() {
 		rpcClientsClose()
-		_ = consul.ServiceDeregister(serverId)
+		_ = consul.ServiceDeregister(serviceName)
 		glog.Flush()
 	}()
 	err := godotenv.Load()

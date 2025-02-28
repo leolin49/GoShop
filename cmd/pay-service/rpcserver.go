@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	paypb "goshop/api/protobuf/pay"
+	"goshop/configs"
 	"goshop/models"
 	"net"
 	"strconv"
@@ -18,15 +20,16 @@ type PayRpcService struct {
 	paypb.UnimplementedPayServiceServer
 }
 
-func rpcServerStart() bool {
-	lis, err := net.Listen("tcp", ":49400")
+func rpcServerStart(cfg *configs.Config) bool {
+	addr := fmt.Sprintf("%s:%s", cfg.PayCfg.Host, cfg.PayCfg.Port)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("[PayServer] rpcserver failed to listen: %v", err)
 		return false
 	}
 	rpcServer := grpc.NewServer()
 	paypb.RegisterPayServiceServer(rpcServer, new(PayRpcService))
-	glog.Infoln("[PayServer] Starting rpc server on :49400")
+	glog.Infof("[PayServer] Starting rpc server on [%s]\n", addr)
 	go func() {
 		if err := rpcServer.Serve(lis); err != nil {
 			glog.Fatalf("[PayServer] rpcserver failed to start: %v", err)
@@ -53,7 +56,7 @@ func (s *PayRpcService) Charge(ctx context.Context, req *paypb.ReqCharge) (*payp
 		return nil, err
 	}
 
-	err = models.NewPaymentLogQuery(Mysql()).CreatePaymentLog(&models.PaymentLog{
+	err = models.NewPaymentLogQuery(db).CreatePaymentLog(&models.PaymentLog{
 		UserId:        req.UserId,
 		OrderId:       req.OrderId,
 		TransactionId: transactionId.String(),
