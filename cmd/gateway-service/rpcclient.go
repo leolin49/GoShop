@@ -15,6 +15,7 @@ func rpcClientsStart() {
 		{"cart", CartClientStart},
 		{"auth", AuthClientStart},
 		{"checkout", CheckoutClientStart},
+		{"stock", StockClientStart},
 	}
 
 	for _, client := range clients {
@@ -38,6 +39,7 @@ func rpcClientsClose() {
 		{"cart", CartClientClose},
 		{"auth", AuthClientClose},
 		{"checkout", CheckoutClientClose},
+		{"stock", StockClientClose},
 	}
 
 	for _, client := range clients {

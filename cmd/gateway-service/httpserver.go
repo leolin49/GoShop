@@ -67,6 +67,13 @@ func registerRoute(r *gin.Engine) {
 		checkout.POST("/checkout", handleCheckout)
 	}
 
+	stock := r.Group("/stock")
+	{
+		stock.POST("/get", handleGetStock)
+		stock.POST("/add", handleAddStock) // TODO: manager
+		stock.POST("/sub", handleSubStock)
+	}
+
 	r.POST("/refreshToken", handleRefreshToken)
 }
 

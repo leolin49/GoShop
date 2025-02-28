@@ -21,6 +21,7 @@ type Config struct {
 	PayCfg          ServiceConfig      `yaml:"pay-service"`
 	CheckoutCfg     CheckoutConfig     `yaml:"checkout-service"`
 	OrderCfg        ServiceConfig      `yaml:"order-service"`
+	StockCfg        StockConfig        `yaml:"stock-service"`
 	RabbitMqCfg     RabbitMQConfig     `yaml:"rabbitmq"`
 	RedisCfg        RedisConfig        `yaml:"redis"`
 	MysqlClusterCfg MySQLClusterConfig `yaml:"mysql-cluster"`
@@ -77,6 +78,12 @@ type RedisConfig struct {
 }
 
 type GatewayConfig struct {
+	Host   string `yaml:"host"`
+	Port   string `yaml:"port"`
+	MqName string `yaml:"mqname"`
+}
+
+type StockConfig struct {
 	Host   string `yaml:"host"`
 	Port   string `yaml:"port"`
 	MqName string `yaml:"mqname"`

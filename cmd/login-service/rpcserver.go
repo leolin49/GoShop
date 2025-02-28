@@ -32,7 +32,6 @@ func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegi
 	if err != nil {
 		return nil, err
 	}
-
 	return &loginpb.RspRegisterUser{
 		ErrorCode: errorcode.Ok,
 		UserId:    uint32(user.ID),

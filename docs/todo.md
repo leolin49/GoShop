@@ -8,11 +8,11 @@
 
 ### Consul 
 1. gateway实现了从consul配置中心读取配置； 2. TODO: 需要实现consul长轮询读取配置，以实现热更新；
-3. TODO: 重构pkg/service/consul.go，将consul相关封装；
-4. TODO: 其他服务也需要改为从consul读取配置；
+3. TODO: 重构pkg/service/consul.go，将consul相关封装；(DONE)
+4. TODO: 其他服务也需要改为从consul读取配置；(DONE)
 
 ### Mysql
-1. TODO: Mysql连接改为由pkg/mysql/db.go统一生成，只需要传入配置；
+1. TODO: Mysql连接改为由pkg/mysql/db.go统一生成，只需要传入配置；(DONE)
 
 ### Redis
 1. cartserver实现了GetCart缓存（注意先更新Mysql再删除Redis缓存以保证数据一致性），在AddCart和CleanCart时需要删除缓存；
@@ -31,8 +31,8 @@
 1. TODO: 地址好像有问题
 
 ### Mysql
-1. 实现了Mysql主从复制的配置和docker环境
-2. TODO: 使用gorm实现读写分离
+1. 实现了Mysql主从复制的配置和docker环境(DONE)
+2. TODO: 使用gorm实现读写分离(DONE)
 
 ## 2025.02.27
 
@@ -41,6 +41,22 @@
 
 ### 代码重构
 2. gateway login product auth
+
+## 2025.02.28
+
+### login
+1. 密码做md5盐值加密
+
+### stock
+1. TODO: 新增库存服务
+2. 基于Mysql事务和乐观锁防止超卖（但是高并发下，行级锁存在性能问题）
+
+### redis
+1. TODO: 部署redis集群
+2. TODO: 基于redis实现分布式锁
+
+### 代码重构
+1. all service done 
 
 > 已接入redis缓存的服务: cart checkout
 

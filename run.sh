@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BIN="$(pwd)/bin"
-SERVICES=("login" "product" "cart" "auth" "pay" "checkout" "order" "gateway")
+SERVICES=("login" "product" "cart" "auth" "pay" "checkout" "order" "stock" "gateway")
 
 main() {
 	case "$1" in
@@ -126,6 +126,15 @@ run_order() {
     pgrep -f "${BIN}/${service_name}-service" > /dev/null && echo "${service_name} start success" || echo "${service_name} start failed"
 }
 
+run_stock() {
+    local service_name="stock"
+    echo "running ${service_name}"
+    mkdir -p "${BIN}/${service_name}" 
+    nohup "${BIN}/${service_name}-service" -log_dir="${BIN}/${service_name}" > /dev/null 2>&1 &
+    sleep 1
+    pgrep -f "${BIN}/${service_name}-service" > /dev/null && echo "${service_name} start success" || echo "${service_name} start failed"
+}
+
 run_all() {
 	for service in "${SERVICES[@]}"; do
 		run_service "${service}"
@@ -159,6 +168,9 @@ run_service() {
 			;;
 		checkout)
 			run_checkout
+			;;
+		stock)
+			run_stock
 			;;
 		*)
 			echo "Unknow service: $2"

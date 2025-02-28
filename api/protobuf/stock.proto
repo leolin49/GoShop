@@ -1,0 +1,41 @@
+syntax = "proto3";
+package stock;
+
+option go_package = "goshop/api/protobuf/stock;stockpb";
+
+service StockService {
+  rpc GetStock(ReqGetStock) returns (RspGetStock) {}
+  rpc AddStock(ReqAddStock) returns (RspAddStock) {}
+  rpc SubStock(ReqSubStock) returns (RspSubStock) {}
+}
+
+message Stock {
+  uint32 product_id = 1;
+  uint64 count = 2;
+}
+
+message ReqGetStock {
+  uint32 product_id = 1;
+}
+
+message RspGetStock {
+  uint64 count = 1;
+}
+
+message ReqAddStock {
+  uint32 product_id = 1;
+  uint64 add_count = 2;
+}
+
+message RspAddStock {
+  int32 error_code = 1;
+}
+
+message ReqSubStock {
+  uint32 product_id = 1;
+  uint64 sub_count = 2;
+}
+
+message RspSubStock {
+  int32 error_code = 1;
+}
