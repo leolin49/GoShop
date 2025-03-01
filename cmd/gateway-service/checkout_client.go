@@ -24,7 +24,11 @@ func CheckoutClientStart() error {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
 		return err
 	}
-	checkout_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	checkout_conn, err = grpc.NewClient(
+		addr, 
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		glog.Errorln("[Gatewayserver] new cart rpc client error: ", err.Error())
 		return err

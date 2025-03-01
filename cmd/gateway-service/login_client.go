@@ -24,7 +24,29 @@ func LoginClientStart() error {
 		glog.Errorln("[Gatewayserver] consul service recover failed.")
 		return err
 	}
-	login_conn, err = grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	var retryPolicy = 
+	`{
+		"methodConfig": [{
+			"name": [
+				{"service": "login.LoginService","method": "LoginUser"},
+				{"service": "login.LoginService","method": "RegisterUser"}
+			],
+			"retryPolicy": {
+				"MaxAttempts": 5,
+				"InitialBackoff": ".01s",
+				"MaxBackoff": ".01s",
+				"BackoffMultiplier": 1.0,
+				"RetryableStatusCodes": [ "UNAVAILABLE" ]
+			}
+		}]
+	}`
+	login_conn, err = grpc.NewClient(
+		addr, 
+		grpc.WithTransportCredentials(insecure.NewCredentials()), 
+		grpc.WithDefaultServiceConfig(retryPolicy),
+	)
+
 	if err != nil {
 		glog.Errorln("[Gatewayserver] new login rpc client error: ", err.Error())
 		return err

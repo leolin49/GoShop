@@ -54,9 +54,14 @@ func handleAddStock(c *gin.Context) {
 		return
 	}
 
-	req := &stockpb.ReqAddStock{
+	stocks := []*stockpb.Stock{}
+	stocks = append(stocks, &stockpb.Stock{
 		ProductId: uint32(productId),
-		AddCount:  uint64(addCnt),
+		Count: uint64(addCnt),
+	})
+
+	req := &stockpb.ReqAddStock{
+		Stocks: stocks,
 	}
 	ret, err := StockClient().AddStock(context.Background(), req)
 	if err != nil {
@@ -79,9 +84,14 @@ func handleSubStock(c *gin.Context) {
 		invalidParam(c)
 		return
 	}
-	req := &stockpb.ReqSubStock{
+	stocks := []*stockpb.Stock{}
+	stocks = append(stocks, &stockpb.Stock{
 		ProductId: uint32(productId),
-		SubCount:  uint64(subCnt),
+		Count: uint64(subCnt),
+	})
+
+	req := &stockpb.ReqSubStock{
+		Stocks: stocks,
 	}
 	ret, err := StockClient().SubStock(context.Background(), req)
 	if err != nil {

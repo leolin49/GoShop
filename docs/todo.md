@@ -45,10 +45,10 @@
 ## 2025.02.28
 
 ### login
-1. 密码做md5盐值加密
+1. 密码做md5盐值加密(DONE)
 
 ### stock
-1. TODO: 新增库存服务
+1. TODO: 新增库存服务(DONE)
 2. 基于Mysql事务和乐观锁防止超卖（但是高并发下，行级锁存在性能问题）
 
 ### redis
@@ -57,6 +57,13 @@
 
 ### 代码重构
 1. all service done 
+
+
+## 2025.03.01
+
+### grpc
+1. TODO: retry + 接口幂等性设计
+
 
 > 已接入redis缓存的服务: cart checkout
 

@@ -47,31 +47,35 @@ func (s *StockRpcService) GetStock(ctx context.Context, req *stockpb.ReqGetStock
 
 func (s *StockRpcService) AddStock(ctx context.Context, req *stockpb.ReqAddStock) (*stockpb.RspAddStock, error) {
 	// check the product exist
-	_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
-		Id: req.ProductId,
-	})
-	if err != nil {
-		return nil, err
-	}
-	err = models.NewStockQuery(db).AddStock(req.ProductId, req.AddCount)
-	if err != nil {
-		return nil, err
+	for _, stockItem := range req.Stocks {
+		_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
+			Id: stockItem.ProductId,
+		})
+		if err != nil {
+			return nil, err
+		}
+		err = models.NewStockQuery(db).AddStock(stockItem.ProductId, stockItem.Count)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &stockpb.RspAddStock{ErrorCode: errorcode.Ok}, nil
 }
 
 func (s *StockRpcService) SubStock(ctx context.Context, req *stockpb.ReqSubStock) (*stockpb.RspSubStock, error) {
 	// check the product exist
-	_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
-		Id: req.ProductId,
-	})
-	if err != nil {
-		return nil, err
-	}
-	err = models.NewStockQuery(db).SubStock(req.ProductId, req.SubCount)
-	if err != nil {
-		// FIXME: more info in return struct
-		return nil, err
+	for _, stockItem := range req.Stocks {
+		_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
+			Id: stockItem.ProductId,
+		})
+		if err != nil {
+			return nil, err
+		}
+		err = models.NewStockQuery(db).SubStock(stockItem.ProductId, stockItem.Count)
+		if err != nil {
+			// FIXME: more info in return struct
+			return nil, err
+		}
 	}
 	return &stockpb.RspSubStock{ErrorCode: errorcode.Ok}, nil
 }

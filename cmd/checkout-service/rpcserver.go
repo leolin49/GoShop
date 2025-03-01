@@ -8,6 +8,7 @@ import (
 	orderpb "goshop/api/protobuf/order"
 	paypb "goshop/api/protobuf/pay"
 	productpb "goshop/api/protobuf/product"
+	stockpb "goshop/api/protobuf/stock"
 	"goshop/configs"
 	"net"
 
@@ -51,8 +52,9 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 
 	var (
 		total      float32
-		orderItems []*orderpb.OrderItem
 		orderId    string
+		stockItems []*stockpb.Stock
+		orderItems []*orderpb.OrderItem
 	)
 
 	for _, item := range cartRet.Cart.Items {
@@ -80,6 +82,11 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 			},
 			Cost: cost,
 		})
+
+		stockItems = append(stockItems, &stockpb.Stock{
+			ProductId: item.ProductId,
+			Count: uint64(item.Quantity),
+		})
 	}
 
 	// create the order.
@@ -103,6 +110,16 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 		orderId = orderRet.OrderResult.OrderId
 	}
 
+	// clean cart.
+	_, err = CartClient().CleanCart(ctx, &cartpb.ReqCleanCart{
+		UserId: req.UserId,
+	})
+	if err != nil {
+		glog.Errorln("[CheckoutServer] clean cart error:", err.Error())
+		return nil, err
+	}
+
+	// create the transaction.
 	payReq := &paypb.ReqCharge{
 		UserId:  req.UserId,
 		OrderId: orderId,
@@ -114,20 +131,21 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 			CreditCardExpirationYear:  req.CardInfo.CreditCardExpirationYear,
 		},
 	}
-	// clean cart.
-	_, err = CartClient().CleanCart(ctx, &cartpb.ReqCleanCart{
-		UserId: req.UserId,
-	})
-	if err != nil {
-		glog.Errorln("[CheckoutServer] clean cart error:", err.Error())
-		return nil, err
-	}
-	// create the transaction.
 	payRet, err := PayClient().Charge(ctx, payReq)
 	if err != nil {
 		glog.Errorln("[CheckoutServer] pay charge error:", err.Error())
 		return nil, err
 	}
+
+	// sub the stock of product
+	_, err = StockClient().SubStock(ctx, &stockpb.ReqSubStock{
+		Stocks: stockItems,
+	})
+	if err != nil {
+		glog.Errorln("[CheckoutServer] stock sub error:", err.Error())
+		return nil, err
+	}
+
 	glog.Infof("[Checkoutserver] %v checkout success\n", req.UserId)
 
 	return &checkoutpb.RspCheckout{

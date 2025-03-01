@@ -23,8 +23,7 @@ message RspGetStock {
 }
 
 message ReqAddStock {
-  uint32 product_id = 1;
-  uint64 add_count = 2;
+  repeated Stock stocks = 1;
 }
 
 message RspAddStock {
@@ -32,8 +31,7 @@ message RspAddStock {
 }
 
 message ReqSubStock {
-  uint32 product_id = 1;
-  uint64 sub_count = 2;
+  repeated Stock stocks = 1;
 }
 
 message RspSubStock {

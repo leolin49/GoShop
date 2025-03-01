@@ -3,7 +3,8 @@ package login;
 
 option go_package = "goshop/api/protobuf/login;loginpb";
 
-service LoginService { rpc RegisterUser(ReqRegisterUser) returns (RspRegisterUser) {}
+service LoginService { 
+  rpc RegisterUser(ReqRegisterUser) returns (RspRegisterUser) {}
   rpc LoginUser(ReqLoginUser) returns (RspLoginUser) {}
   rpc UpdateUser(ReqUpdateUser) returns (RspUpdateUser) {}
 }
