@@ -26,7 +26,7 @@ func CheckoutClientStart() error {
 	}
 
 	checkout_conn, err = grpc.NewClient(
-		addr, 
+		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

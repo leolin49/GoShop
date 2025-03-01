@@ -19,9 +19,9 @@ import (
 type LoginRpcService struct {
 	loginpb.UnimplementedLoginServiceServer
 	// TODO grpc retry
-	mu 			sync.Mutex
-	reqCounter 	uint
-	reqModulo  	uint
+	mu         sync.Mutex
+	reqCounter uint
+	reqModulo  uint
 }
 
 func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegisterUser) (*loginpb.RspRegisterUser, error) {

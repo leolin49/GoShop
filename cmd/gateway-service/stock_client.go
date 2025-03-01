@@ -57,7 +57,7 @@ func handleAddStock(c *gin.Context) {
 	stocks := []*stockpb.Stock{}
 	stocks = append(stocks, &stockpb.Stock{
 		ProductId: uint32(productId),
-		Count: uint64(addCnt),
+		Count:     uint64(addCnt),
 	})
 
 	req := &stockpb.ReqAddStock{
@@ -87,7 +87,7 @@ func handleSubStock(c *gin.Context) {
 	stocks := []*stockpb.Stock{}
 	stocks = append(stocks, &stockpb.Stock{
 		ProductId: uint32(productId),
-		Count: uint64(subCnt),
+		Count:     uint64(subCnt),
 	})
 
 	req := &stockpb.ReqSubStock{

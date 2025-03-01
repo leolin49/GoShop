@@ -25,8 +25,7 @@ func LoginClientStart() error {
 		return err
 	}
 
-	var retryPolicy = 
-	`{
+	var retryPolicy = `{
 		"methodConfig": [{
 			"name": [
 				{"service": "login.LoginService","method": "LoginUser"},
@@ -42,8 +41,8 @@ func LoginClientStart() error {
 		}]
 	}`
 	login_conn, err = grpc.NewClient(
-		addr, 
-		grpc.WithTransportCredentials(insecure.NewCredentials()), 
+		addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(retryPolicy),
 	)
 

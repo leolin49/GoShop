@@ -85,7 +85,7 @@ func (s *CheckoutRpcService) Checkout(ctx context.Context, req *checkoutpb.ReqCh
 
 		stockItems = append(stockItems, &stockpb.Stock{
 			ProductId: item.ProductId,
-			Count: uint64(item.Quantity),
+			Count:     uint64(item.Quantity),
 		})
 	}
 
