@@ -22,6 +22,7 @@ type Config struct {
 	CheckoutCfg     CheckoutConfig     `yaml:"checkout-service"`
 	OrderCfg        ServiceConfig      `yaml:"order-service"`
 	StockCfg        StockConfig        `yaml:"stock-service"`
+	TimeCfg         TimeConfig         `yaml:"time-service"`
 	RabbitMqCfg     RabbitMQConfig     `yaml:"rabbitmq"`
 	RedisCfg        RedisConfig        `yaml:"redis"`
 	MysqlClusterCfg MySQLClusterConfig `yaml:"mysql-cluster"`
@@ -81,6 +82,11 @@ type GatewayConfig struct {
 	Host   string `yaml:"host"`
 	Port   string `yaml:"port"`
 	MqName string `yaml:"mqname"`
+}
+
+type TimeConfig struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
 }
 
 type StockConfig struct {

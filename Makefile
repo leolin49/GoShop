@@ -17,6 +17,7 @@ SERVICES := \
        checkout-service \
        order-service \
 	   stock-service \
+	   time-service \
        gateway-service
 
 .PHONY: all
@@ -87,6 +88,9 @@ order: $(BIN)/order-service
 
 .PHONY: stock 
 stock: $(BIN)/stock-service
+
+.PHONY: time 
+time: $(BIN)/time-service
 
 .PHONY: fmt
 fmt:

@@ -46,8 +46,8 @@ func (s *StockRpcService) GetStock(ctx context.Context, req *stockpb.ReqGetStock
 }
 
 func (s *StockRpcService) AddStock(ctx context.Context, req *stockpb.ReqAddStock) (*stockpb.RspAddStock, error) {
-	// check the product exist
 	for _, stockItem := range req.Stocks {
+		// check the product exist	FIXME use db to check
 		_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
 			Id: stockItem.ProductId,
 		})
@@ -63,8 +63,8 @@ func (s *StockRpcService) AddStock(ctx context.Context, req *stockpb.ReqAddStock
 }
 
 func (s *StockRpcService) SubStock(ctx context.Context, req *stockpb.ReqSubStock) (*stockpb.RspSubStock, error) {
-	// check the product exist
 	for _, stockItem := range req.Stocks {
+		// check the product exist
 		_, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
 			Id: stockItem.ProductId,
 		})

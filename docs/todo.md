@@ -64,6 +64,12 @@
 ### grpc
 1. TODO: retry + 接口幂等性设计
 
+### time
+1. 新增 time-service 用于定时任务，如限时秒杀等
+
+### stock
+1. 新增 基于redis缓存预热 + Lua脚本 的秒杀实现
+
 
 > 已接入redis缓存的服务: cart checkout
 

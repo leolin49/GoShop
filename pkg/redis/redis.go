@@ -22,6 +22,7 @@ type IRdb interface {
 	GetInt(k string) (int, error)
 	SetProto(k string, v proto.Message) error
 	GetProto(k string, v proto.Message) (bool, error)
+	RunScript(src string, keys []string, args []interface{}) (interface{}, error)
 }
 
 type Rdb struct {
@@ -106,4 +107,9 @@ func (r *Rdb) GetProto(k string, v proto.Message) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *Rdb) RunScript(src string, keys []string, args []interface{}) (interface{}, error) {
+	srcript := redis.NewScript(src)
+	return srcript.Run(r.ctx, r.db, keys, args...).Result()
 }

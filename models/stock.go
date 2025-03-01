@@ -32,6 +32,16 @@ func (q *StockQuery) GetStock(productId uint32) (count uint64, err error) {
 	return
 }
 
+func (q *StockQuery) SetStock(productId uint32, count uint64) (err error) {
+	err = q.db.Model(&Stock{}).Where("product_id = ?", productId).UpdateColumn("count", count).Error
+	return
+}
+
+func (q *StockQuery) GetAllStock() (stocks []*Stock, err error) {
+	err = q.db.Find(&stocks).Error
+	return
+}
+
 func (q *StockQuery) AddStock(productId uint32, addCount uint64) (err error) {
 	// NOTE: Don't use the return value 'count' here cause Concurrency safe.
 	_, err = q.GetStock(productId)

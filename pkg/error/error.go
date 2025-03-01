@@ -18,5 +18,8 @@ const (
 	AuthDeliveryTokenError ErrorCode = 400
 	AuthVerifyTokenError   ErrorCode = 400
 
+	// Stock Service
+	FlashNoStock ErrorCode = 701
+
 	UnknowError ErrorCode = 999
 )

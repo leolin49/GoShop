@@ -7,6 +7,10 @@ service StockService {
   rpc GetStock(ReqGetStock) returns (RspGetStock) {}
   rpc AddStock(ReqAddStock) returns (RspAddStock) {}
   rpc SubStock(ReqSubStock) returns (RspSubStock) {}
+  
+  rpc FlashStock(ReqFlashStock) returns (RspFlashStock) {}
+  rpc FlashCacheWarmUp(ReqFlashCacheWarmUp) returns (RspFlashCacheWarmUp) {}
+  rpc FlashCacheClear(ReqFlashCacheClear) returns (RspFlashCacheClear) {}
 }
 
 message Stock {
@@ -37,3 +41,27 @@ message ReqSubStock {
 message RspSubStock {
   int32 error_code = 1;
 }
+
+message ReqFlashStock {
+  uint32 product_id = 1;
+  uint64 sub_count = 2;
+}
+
+message RspFlashStock {
+  int32 error_code = 1;
+}
+
+message ReqFlashCacheWarmUp {
+}
+
+message RspFlashCacheWarmUp {
+  int32 error_code = 1;
+}
+
+message ReqFlashCacheClear {
+}
+
+message RspFlashCacheClear {
+  int32 error_code = 1;
+}
+

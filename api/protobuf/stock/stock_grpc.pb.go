@@ -19,9 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StockService_GetStock_FullMethodName = "/stock.StockService/GetStock"
-	StockService_AddStock_FullMethodName = "/stock.StockService/AddStock"
-	StockService_SubStock_FullMethodName = "/stock.StockService/SubStock"
+	StockService_GetStock_FullMethodName         = "/stock.StockService/GetStock"
+	StockService_AddStock_FullMethodName         = "/stock.StockService/AddStock"
+	StockService_SubStock_FullMethodName         = "/stock.StockService/SubStock"
+	StockService_FlashStock_FullMethodName       = "/stock.StockService/FlashStock"
+	StockService_FlashCacheWarmUp_FullMethodName = "/stock.StockService/FlashCacheWarmUp"
+	StockService_FlashCacheClear_FullMethodName  = "/stock.StockService/FlashCacheClear"
 )
 
 // StockServiceClient is the client API for StockService service.
@@ -31,6 +34,9 @@ type StockServiceClient interface {
 	GetStock(ctx context.Context, in *ReqGetStock, opts ...grpc.CallOption) (*RspGetStock, error)
 	AddStock(ctx context.Context, in *ReqAddStock, opts ...grpc.CallOption) (*RspAddStock, error)
 	SubStock(ctx context.Context, in *ReqSubStock, opts ...grpc.CallOption) (*RspSubStock, error)
+	FlashStock(ctx context.Context, in *ReqFlashStock, opts ...grpc.CallOption) (*RspFlashStock, error)
+	FlashCacheWarmUp(ctx context.Context, in *ReqFlashCacheWarmUp, opts ...grpc.CallOption) (*RspFlashCacheWarmUp, error)
+	FlashCacheClear(ctx context.Context, in *ReqFlashCacheClear, opts ...grpc.CallOption) (*RspFlashCacheClear, error)
 }
 
 type stockServiceClient struct {
@@ -71,6 +77,36 @@ func (c *stockServiceClient) SubStock(ctx context.Context, in *ReqSubStock, opts
 	return out, nil
 }
 
+func (c *stockServiceClient) FlashStock(ctx context.Context, in *ReqFlashStock, opts ...grpc.CallOption) (*RspFlashStock, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RspFlashStock)
+	err := c.cc.Invoke(ctx, StockService_FlashStock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stockServiceClient) FlashCacheWarmUp(ctx context.Context, in *ReqFlashCacheWarmUp, opts ...grpc.CallOption) (*RspFlashCacheWarmUp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RspFlashCacheWarmUp)
+	err := c.cc.Invoke(ctx, StockService_FlashCacheWarmUp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stockServiceClient) FlashCacheClear(ctx context.Context, in *ReqFlashCacheClear, opts ...grpc.CallOption) (*RspFlashCacheClear, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RspFlashCacheClear)
+	err := c.cc.Invoke(ctx, StockService_FlashCacheClear_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StockServiceServer is the server API for StockService service.
 // All implementations must embed UnimplementedStockServiceServer
 // for forward compatibility.
@@ -78,6 +114,9 @@ type StockServiceServer interface {
 	GetStock(context.Context, *ReqGetStock) (*RspGetStock, error)
 	AddStock(context.Context, *ReqAddStock) (*RspAddStock, error)
 	SubStock(context.Context, *ReqSubStock) (*RspSubStock, error)
+	FlashStock(context.Context, *ReqFlashStock) (*RspFlashStock, error)
+	FlashCacheWarmUp(context.Context, *ReqFlashCacheWarmUp) (*RspFlashCacheWarmUp, error)
+	FlashCacheClear(context.Context, *ReqFlashCacheClear) (*RspFlashCacheClear, error)
 	mustEmbedUnimplementedStockServiceServer()
 }
 
@@ -96,6 +135,15 @@ func (UnimplementedStockServiceServer) AddStock(context.Context, *ReqAddStock) (
 }
 func (UnimplementedStockServiceServer) SubStock(context.Context, *ReqSubStock) (*RspSubStock, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubStock not implemented")
+}
+func (UnimplementedStockServiceServer) FlashStock(context.Context, *ReqFlashStock) (*RspFlashStock, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlashStock not implemented")
+}
+func (UnimplementedStockServiceServer) FlashCacheWarmUp(context.Context, *ReqFlashCacheWarmUp) (*RspFlashCacheWarmUp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlashCacheWarmUp not implemented")
+}
+func (UnimplementedStockServiceServer) FlashCacheClear(context.Context, *ReqFlashCacheClear) (*RspFlashCacheClear, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlashCacheClear not implemented")
 }
 func (UnimplementedStockServiceServer) mustEmbedUnimplementedStockServiceServer() {}
 func (UnimplementedStockServiceServer) testEmbeddedByValue()                      {}
@@ -172,6 +220,60 @@ func _StockService_SubStock_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StockService_FlashStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqFlashStock)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServiceServer).FlashStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockService_FlashStock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServiceServer).FlashStock(ctx, req.(*ReqFlashStock))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StockService_FlashCacheWarmUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqFlashCacheWarmUp)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServiceServer).FlashCacheWarmUp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockService_FlashCacheWarmUp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServiceServer).FlashCacheWarmUp(ctx, req.(*ReqFlashCacheWarmUp))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StockService_FlashCacheClear_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqFlashCacheClear)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServiceServer).FlashCacheClear(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockService_FlashCacheClear_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServiceServer).FlashCacheClear(ctx, req.(*ReqFlashCacheClear))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StockService_ServiceDesc is the grpc.ServiceDesc for StockService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +292,18 @@ var StockService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubStock",
 			Handler:    _StockService_SubStock_Handler,
+		},
+		{
+			MethodName: "FlashStock",
+			Handler:    _StockService_FlashStock_Handler,
+		},
+		{
+			MethodName: "FlashCacheWarmUp",
+			Handler:    _StockService_FlashCacheWarmUp_Handler,
+		},
+		{
+			MethodName: "FlashCacheClear",
+			Handler:    _StockService_FlashCacheClear_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
