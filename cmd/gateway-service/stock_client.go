@@ -115,3 +115,44 @@ func handleGetStock(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ret)
 }
+
+// --------- test ------------------- //
+func handleFlashWarm(c *gin.Context) {
+	ret, err := StockClient().FlashCacheWarmUp(context.Background(), &stockpb.ReqFlashCacheWarmUp{})
+	if err != nil {
+		rpcRequestError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, ret)
+}
+
+func handleFlashBuy(c *gin.Context) {
+	product_id, err := getPostFormInt(c, "product_id")
+	if err != nil {
+		invalidParam(c)
+		return
+	}
+	count, err := getPostFormInt(c, "sub_count")
+	if err != nil {
+		invalidParam(c)
+		return
+	}
+	ret, err := StockClient().FlashStock(context.Background(), &stockpb.ReqFlashStock{
+		ProductId: uint32(product_id),
+		SubCount:  uint64(count),
+	})
+	if err != nil {
+		rpcRequestError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, ret)
+}
+
+func handleFlashClear(c *gin.Context) {
+	ret, err := StockClient().FlashCacheClear(context.Background(), &stockpb.ReqFlashCacheClear{})
+	if err != nil {
+		rpcRequestError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, ret)
+}

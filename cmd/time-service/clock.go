@@ -22,8 +22,8 @@ func clockTrigger() {
 		// 1. set the flash:Hour key in redis as the flag.
 		case t := <-FlashBeginChan:
 			glog.Infof("[TimeServer] flash sales start in %v", t)
-			flashKey := fmt.Sprintf("flash_sales:%d", t.Hour())
-			if err := rdb.SetInt(flashKey, 1); err != nil {
+			FlashKey = fmt.Sprintf("flash_sales:%d", t.Unix())
+			if err := rdb.SetInt(FlashKey, 1); err != nil {
 				glog.Errorf("[TimeServer] flash sales start failed: %v\n", err)
 			}
 		// Flash sales end. 00:05:00
@@ -31,8 +31,7 @@ func clockTrigger() {
 		// 2. tran the cache data to mysql.
 		case t := <-FlashEndChan:
 			glog.Infof("[TimeServer] flash sales end in %v\n", t)
-			flashKey := fmt.Sprintf("flash_sales:%d", t.Hour())
-			if err := rdb.Del(flashKey); err != nil {
+			if err := rdb.Del(FlashKey); err != nil {
 				glog.Errorf("[TimeServer] flash sales end failed: %v\n", err)
 			}
 			if _, err := StockClient().FlashCacheClear(context.Background(), &stockpb.ReqFlashCacheClear{}); err != nil {

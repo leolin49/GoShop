@@ -24,19 +24,18 @@ func (s *StockRpcService) FlashStock(ctx context.Context, req *stockpb.ReqFlashS
 	}
 	res, err := rdb.RunScript(`
 		local product_key = KEYS[1]
-		local flash_count = ARGV[1]
+		local flash_count = tonumber(ARGV[1])
 		local stock = tonumber(redis.call('GET', product_key))
 		if stock < flash_count then
-			return 0
+			return 1
 		end
-		redis.call('DECR', flash_count)
-		return 1
+		redis.call('DECRBY', product_key, flash_count)
+		return 2
 	`, []string{productKey}, []interface{}{req.SubCount})
 	if err != nil {
 		return nil, err
 	}
-	success, _ := res.(int)
-	if success == 0 {
+	if res == 1 {
 		return &stockpb.RspFlashStock{ErrorCode: errorcode.FlashNoStock}, nil
 	}
 	return &stockpb.RspFlashStock{ErrorCode: errorcode.Ok}, nil
@@ -58,7 +57,7 @@ func (s *StockRpcService) FlashCacheWarmUp(ctx context.Context, req *stockpb.Req
 	return &stockpb.RspFlashCacheWarmUp{ErrorCode: errorcode.Ok}, nil
 }
 
-func (s *StockRpcService) FlashCacheClean(ctx context.Context, req *stockpb.ReqFlashCacheClear) (*stockpb.RspFlashCacheClear, error) {
+func (s *StockRpcService) FlashCacheClear(ctx context.Context, req *stockpb.ReqFlashCacheClear) (*stockpb.RspFlashCacheClear, error) {
 	stocks, err := models.NewStockQuery(db).GetAllStock()
 	if err != nil {
 		glog.Errorln("[StockServer] get all stock error: ", err)
@@ -75,14 +74,13 @@ func (s *StockRpcService) FlashCacheClean(ctx context.Context, req *stockpb.ReqF
 			return nil, err
 		}
 
-		cnt, _ := res.(uint64)
 		// write to mysql
 		go func(productId uint32, count uint64) {
 			if err := models.NewStockQuery(db).SetStock(st.ProductId, count); err != nil {
 				glog.Errorf("[StockServer] write the cache [%d - %d] back to mysql failed: %v", productId, count, err)
 				return
 			}
-		}(st.ProductId, cnt)
+		}(st.ProductId, uint64(res))
 	}
 	return &stockpb.RspFlashCacheClear{ErrorCode: errorcode.Ok}, nil
 }

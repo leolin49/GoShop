@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CheckoutService_Checkout_FullMethodName = "/checkout.CheckoutService/Checkout"
+	CheckoutService_Checkout_FullMethodName      = "/checkout.CheckoutService/Checkout"
+	CheckoutService_FlashCheckout_FullMethodName = "/checkout.CheckoutService/FlashCheckout"
 )
 
 // CheckoutServiceClient is the client API for CheckoutService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CheckoutServiceClient interface {
 	Checkout(ctx context.Context, in *ReqCheckout, opts ...grpc.CallOption) (*RspCheckout, error)
+	FlashCheckout(ctx context.Context, in *ReqFlashCheckout, opts ...grpc.CallOption) (*RspFlashCheckout, error)
 }
 
 type checkoutServiceClient struct {
@@ -47,11 +49,22 @@ func (c *checkoutServiceClient) Checkout(ctx context.Context, in *ReqCheckout, o
 	return out, nil
 }
 
+func (c *checkoutServiceClient) FlashCheckout(ctx context.Context, in *ReqFlashCheckout, opts ...grpc.CallOption) (*RspFlashCheckout, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RspFlashCheckout)
+	err := c.cc.Invoke(ctx, CheckoutService_FlashCheckout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CheckoutServiceServer is the server API for CheckoutService service.
 // All implementations must embed UnimplementedCheckoutServiceServer
 // for forward compatibility.
 type CheckoutServiceServer interface {
 	Checkout(context.Context, *ReqCheckout) (*RspCheckout, error)
+	FlashCheckout(context.Context, *ReqFlashCheckout) (*RspFlashCheckout, error)
 	mustEmbedUnimplementedCheckoutServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedCheckoutServiceServer struct{}
 
 func (UnimplementedCheckoutServiceServer) Checkout(context.Context, *ReqCheckout) (*RspCheckout, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Checkout not implemented")
+}
+func (UnimplementedCheckoutServiceServer) FlashCheckout(context.Context, *ReqFlashCheckout) (*RspFlashCheckout, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlashCheckout not implemented")
 }
 func (UnimplementedCheckoutServiceServer) mustEmbedUnimplementedCheckoutServiceServer() {}
 func (UnimplementedCheckoutServiceServer) testEmbeddedByValue()                         {}
@@ -104,6 +120,24 @@ func _CheckoutService_Checkout_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CheckoutService_FlashCheckout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqFlashCheckout)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckoutServiceServer).FlashCheckout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckoutService_FlashCheckout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckoutServiceServer).FlashCheckout(ctx, req.(*ReqFlashCheckout))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CheckoutService_ServiceDesc is the grpc.ServiceDesc for CheckoutService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var CheckoutService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Checkout",
 			Handler:    _CheckoutService_Checkout_Handler,
+		},
+		{
+			MethodName: "FlashCheckout",
+			Handler:    _CheckoutService_FlashCheckout_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

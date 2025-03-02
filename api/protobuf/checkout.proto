@@ -6,6 +6,7 @@ option go_package = "goshop/api/protobuf/checkout;checkoutpb";
 
 service CheckoutService {
   rpc Checkout(ReqCheckout) returns (RspCheckout) {}
+  rpc FlashCheckout(ReqFlashCheckout) returns (RspFlashCheckout) {}
 }
 
 message Address {
@@ -30,3 +31,19 @@ message RspCheckout {
   string transaction_id = 2;
 }
 
+message ReqFlashCheckout {
+  uint32 user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  Address address = 5;
+  pay.CreditCardInfo card_info = 6;
+
+  uint32 product_id = 7;
+  uint64 count = 8;
+}
+
+message RspFlashCheckout {
+  string order_id = 1;
+  string transaction_id = 2;
+}

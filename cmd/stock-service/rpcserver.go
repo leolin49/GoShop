@@ -18,25 +18,6 @@ type StockRpcService struct {
 	stockpb.UnimplementedStockServiceServer
 }
 
-func rpcServerStart(cfg *configs.Config) bool {
-	addr := fmt.Sprintf("%s:%s", cfg.StockCfg.Host, cfg.StockCfg.Port)
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		glog.Fatalf("[StockServer] rpcserver failed to listen: %v", err)
-		return false
-	}
-	rpcServer := grpc.NewServer()
-	stockpb.RegisterStockServiceServer(rpcServer, new(StockRpcService))
-	glog.Infof("[StockServer] Starting rpc server on [%s]\n", addr)
-	go func() {
-		if err := rpcServer.Serve(lis); err != nil {
-			glog.Fatalf("[StockServer] rpcserver failed to start: %v", err)
-			return
-		}
-	}()
-	return true
-}
-
 func (s *StockRpcService) GetStock(ctx context.Context, req *stockpb.ReqGetStock) (*stockpb.RspGetStock, error) {
 	count, err := models.NewStockQuery(db).GetStock(req.ProductId)
 	if err != nil {
@@ -78,4 +59,23 @@ func (s *StockRpcService) SubStock(ctx context.Context, req *stockpb.ReqSubStock
 		}
 	}
 	return &stockpb.RspSubStock{ErrorCode: errorcode.Ok}, nil
+}
+
+func rpcServerStart(cfg *configs.Config) bool {
+	addr := fmt.Sprintf("%s:%s", cfg.StockCfg.Host, cfg.StockCfg.Port)
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		glog.Fatalf("[StockServer] rpcserver failed to listen: %v", err)
+		return false
+	}
+	rpcServer := grpc.NewServer()
+	stockpb.RegisterStockServiceServer(rpcServer, new(StockRpcService))
+	glog.Infof("[StockServer] Starting rpc server on [%s]\n", addr)
+	go func() {
+		if err := rpcServer.Serve(lis); err != nil {
+			glog.Fatalf("[StockServer] rpcserver failed to start: %v", err)
+			return
+		}
+	}()
+	return true
 }

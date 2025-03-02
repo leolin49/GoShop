@@ -65,6 +65,7 @@ func registerRoute(r *gin.Engine) {
 	checkout.Use(JwtAuthMiddleware())
 	{
 		checkout.POST("/checkout", handleCheckout)
+		checkout.POST("/flash", handleFlashCheckout)
 	}
 
 	stock := r.Group("/stock")
@@ -72,6 +73,10 @@ func registerRoute(r *gin.Engine) {
 		stock.POST("/get", handleGetStock)
 		stock.POST("/add", handleAddStock) // TODO: manager
 		stock.POST("/sub", handleSubStock)
+		// test
+		stock.POST("/test/flash/warm", handleFlashWarm)
+		stock.POST("/test/flash/buy", handleFlashBuy)
+		stock.POST("/test/flash/clear", handleFlashClear)
 	}
 
 	r.POST("/refreshToken", handleRefreshToken)

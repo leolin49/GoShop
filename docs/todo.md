@@ -1,5 +1,4 @@
 # PROCESS LOG
-
 ## 2025.02.25
 
 ### RabbitMQ
@@ -10,7 +9,6 @@
 1. gateway实现了从consul配置中心读取配置； 2. TODO: 需要实现consul长轮询读取配置，以实现热更新；
 3. TODO: 重构pkg/service/consul.go，将consul相关封装；(DONE)
 4. TODO: 其他服务也需要改为从consul读取配置；(DONE)
-
 ### Mysql
 1. TODO: Mysql连接改为由pkg/mysql/db.go统一生成，只需要传入配置；(DONE)
 
@@ -69,7 +67,26 @@
 
 ### stock
 1. 新增 基于redis缓存预热 + Lua脚本 的秒杀实现
+2. TODO: 秒杀结束后，缓存回填到数据库
 
+## 2025.03.02
+
+### login
+1. 分布式session设计？jwt是否应该放在session里？(不应该，因为jwt是无状态的设计，和session相违背)
+2. TODO: 最终方案：
+    2.1 用户登录时，返回短token和sessionId，并将session信息存入redis
+    2.2 对于每个请求，gin鉴权中间件先判断短token是否过期
+        如果过期了，则根据sessionId从redis中拿到长token，验证长token是否过期
+            2.2.1 如果没过期，则重新生成双token，更新session信息到redis中，完成续签
+            2.2.2 如果过期了，删除session，返回错误码表示需要重新登录
+
+### stock
+1. TODO: 秒杀和普通购买是不是走同一套逻辑？库存是否需要同步？
+2. 如何判断当前是否处于秒杀活动期间？
+3. BUG: 缓存回填没有生效！
+
+### time 
+1. 缓存预热有延迟，明明设置了提前10分钟预热，但是临近开始才同步完数据？
 
 > 已接入redis缓存的服务: cart checkout
 
