@@ -23,6 +23,10 @@ type IRdb interface {
 	SetProto(k string, v proto.Message) error
 	GetProto(k string, v proto.Message) (bool, error)
 	RunScript(src string, keys []string, args []interface{}) (int, error)
+	Exec(args ...interface{}) *redis.Cmd
+	Lock(k string) (bool, error)
+	LockFunc(k string, f func() (interface{}, error)) (interface{}, error)
+	UnLock(k string) bool
 }
 
 type Rdb struct {
@@ -112,4 +116,33 @@ func (r *Rdb) GetProto(k string, v proto.Message) (bool, error) {
 func (r *Rdb) RunScript(src string, keys []string, args []interface{}) (int, error) {
 	srcript := redis.NewScript(src)
 	return srcript.Run(r.ctx, r.db, keys, args...).Int()
+}
+
+func (r *Rdb) Exec(args ...interface{}) *redis.Cmd {
+	return r.db.Do(r.ctx, args)
+}
+
+func (r *Rdb) Lock(k string) (bool, error) {
+	res, err := r.Exec("SET", k, 1, "NX", "PX", 1000).Int()
+	if err != nil {
+		return false, err
+	}
+	return res == 1, nil
+}
+
+func (r *Rdb) LockFunc(k string, f func() (interface{}, error)) (interface{}, error) {
+	locked, err := r.Lock(k)
+	defer r.UnLock(k)
+	if err != nil {
+		return nil, err
+	}
+	if !locked {
+		return nil, errors.New(fmt.Sprintf("lock [%s] is locked by others.", k))
+	}
+	return f()
+}
+
+func (r *Rdb) UnLock(k string) bool {
+	err := r.Del(k)
+	return err == nil
 }

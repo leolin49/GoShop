@@ -20,6 +20,48 @@ type PayRpcService struct {
 	paypb.UnimplementedPayServiceServer
 }
 
+// NOTE: Charge should be idempotent to avoid double payments for the same order
+func (s *PayRpcService) Charge(ctx context.Context, req *paypb.ReqCharge) (*paypb.RspCharge, error) {
+	lockKey := fmt.Sprintf("pay_lock:%d:%s", req.UserId, req.OrderId)
+
+	ret, err := rdb.LockFunc(lockKey, func() (interface{}, error) {
+		card := creditcard.Card{
+			Number: req.CardInfo.CreditCardNumber,
+			Cvv:    strconv.Itoa(int(req.CardInfo.CreditCardCvv)),
+			Month:  strconv.Itoa(int(req.CardInfo.CreditCardExpirationMonth)),
+			Year:   strconv.Itoa(int(req.CardInfo.CreditCardExpirationYear)),
+		}
+
+		err := card.Validate(true)
+		if err != nil {
+			return nil, err
+		}
+		transactionId, err := uuid.NewRandom()
+		if err != nil {
+			return nil, err
+		}
+
+		err = models.NewPaymentLogQuery(db).CreatePaymentLog(&models.PaymentLog{
+			UserId:        req.UserId,
+			OrderId:       req.OrderId,
+			TransactionId: transactionId.String(),
+			Amount:        req.Amount,
+			PayAt:         time.Now(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &paypb.RspCharge{
+			TransactionId: transactionId.String(),
+		}, nil
+	})
+	if err != nil {
+		glog.Errorf("[PayServer] lock func exec failed: %v\n", err)
+		return nil, err
+	}
+	return ret.(*paypb.RspCharge), nil
+}
+
 func rpcServerStart(cfg *configs.Config) bool {
 	addr := fmt.Sprintf("%s:%s", cfg.PayCfg.Host, cfg.PayCfg.Port)
 	lis, err := net.Listen("tcp", addr)
@@ -37,36 +79,4 @@ func rpcServerStart(cfg *configs.Config) bool {
 		}
 	}()
 	return true
-}
-
-func (s *PayRpcService) Charge(ctx context.Context, req *paypb.ReqCharge) (*paypb.RspCharge, error) {
-	card := creditcard.Card{
-		Number: req.CardInfo.CreditCardNumber,
-		Cvv:    strconv.Itoa(int(req.CardInfo.CreditCardCvv)),
-		Month:  strconv.Itoa(int(req.CardInfo.CreditCardExpirationMonth)),
-		Year:   strconv.Itoa(int(req.CardInfo.CreditCardExpirationYear)),
-	}
-
-	err := card.Validate(true)
-	if err != nil {
-		return nil, err
-	}
-	transactionId, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
-
-	err = models.NewPaymentLogQuery(db).CreatePaymentLog(&models.PaymentLog{
-		UserId:        req.UserId,
-		OrderId:       req.OrderId,
-		TransactionId: transactionId.String(),
-		Amount:        req.Amount,
-		PayAt:         time.Now(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &paypb.RspCharge{
-		TransactionId: transactionId.String(),
-	}, nil
 }

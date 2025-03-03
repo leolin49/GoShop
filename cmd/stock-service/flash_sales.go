@@ -66,8 +66,8 @@ func (s *StockRpcService) FlashCacheClear(ctx context.Context, req *stockpb.ReqF
 	for _, st := range stocks {
 		key := fmt.Sprintf("product_flash:%d", st.ProductId)
 		res, err := rdb.RunScript(`
-			local cnt = tonumber(redis.call('get', KEYS[1]))
-			redis.call('del', KEYS[1])
+			local cnt = tonumber(redis.call('GET', KEYS[1]))
+			redis.call('DEL', KEYS[1])
 			return cnt
 		`, []string{key}, []interface{}{})
 		if err != nil {

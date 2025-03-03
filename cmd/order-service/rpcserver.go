@@ -7,6 +7,7 @@ import (
 	orderpb "goshop/api/protobuf/order"
 	"goshop/configs"
 	"goshop/models"
+	"goshop/pkg/util"
 	"net"
 
 	"github.com/golang/glog"
@@ -77,7 +78,6 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 			})
 		}
 		if err := tx.Create(&items).Error; err != nil {
-			glog.Errorln("222222222222222222222")
 			return err
 		}
 
@@ -93,6 +93,7 @@ func (s *OrderRpcService) PlaceOrder(ctx context.Context, req *orderpb.ReqPlaceO
 	return
 }
 
+// TODO: neet test
 func (s *OrderRpcService) ListOrder(ctx context.Context, req *orderpb.ReqListOrder) (*orderpb.RspListOrder, error) {
 	list, err := models.NewOrderQuery(db).ListOrder(req.UserId)
 	if err != nil {
