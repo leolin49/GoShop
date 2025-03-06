@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	// "errors"
 	"fmt"
 	cartpb "goshop/api/protobuf/cart"
 	checkoutpb "goshop/api/protobuf/checkout"
@@ -22,11 +22,11 @@ type CheckoutRpcService struct {
 }
 
 func (s *CheckoutRpcService) FlashCheckout(ctx context.Context, req *checkoutpb.ReqFlashCheckout) (*checkoutpb.RspFlashCheckout, error) {
-	if exist, err := rdb.Exist("flash_sales:*"); err != nil {
-		return nil, err
-	} else if !exist {
-		return nil, errors.New("[CheckoutServer] flash activity not start")
-	}
+	// if exist, err := rdb.Exist("flash_sales:*"); err != nil {
+	// 	return nil, err
+	// } else if !exist {
+	// 	return nil, errors.New("[CheckoutServer] flash activity not start")
+	// }
 
 	productRet, err := ProductClient().GetProduct(ctx, &productpb.ReqGetProduct{
 		Id: req.ProductId,

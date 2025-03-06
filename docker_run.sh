@@ -98,6 +98,8 @@ case "$1" in
         start_consul
         start_mysql
         start_nginx
+		start_rabbitmq
+		start_redis
         ;;
     *)
         echo "Usage: $0 {consul|mysql|nginx|rabbitmq|redis|all}"

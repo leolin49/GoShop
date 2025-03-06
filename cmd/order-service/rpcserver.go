@@ -7,7 +7,6 @@ import (
 	orderpb "goshop/api/protobuf/order"
 	"goshop/configs"
 	"goshop/models"
-	"goshop/pkg/util"
 	"net"
 
 	"github.com/golang/glog"

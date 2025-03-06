@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	// "errors"
 	"fmt"
 	stockpb "goshop/api/protobuf/stock"
 	"goshop/models"
@@ -15,13 +15,13 @@ import (
 // TODO
 func (s *StockRpcService) FlashStock(ctx context.Context, req *stockpb.ReqFlashStock) (*stockpb.RspFlashStock, error) {
 	productKey := fmt.Sprintf("product_flash:%d", req.ProductId)
-	if exist, err := rdb.Exist(productKey); err != nil {
-		return nil, err
-	} else if !exist {
-		return nil, errors.New(
-			fmt.Sprintf("[StockServer] flash stock failed, the stock [%s] not exist\n", productKey),
-		)
-	}
+	// if exist, err := rdb.Exist(productKey); err != nil {
+	// 	return nil, err
+	// } else if !exist {
+	// 	return nil, errors.New(
+	// 		fmt.Sprintf("[StockServer] flash stock failed, the stock [%s] not exist\n", productKey),
+	// 	)
+	// }
 	res, err := rdb.RunScript(`
 		local product_key = KEYS[1]
 		local flash_count = tonumber(ARGV[1])

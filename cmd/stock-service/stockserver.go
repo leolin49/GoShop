@@ -31,10 +31,12 @@ var (
 )
 
 func StockServerGetInstance() *StockServer {
-	once.Do(func() {
-		server = &StockServer{}
-		server.Derived = server
-	})
+	if server == nil {
+		once.Do(func() {
+			server = &StockServer{}
+			server.Derived = server
+		})
+	}
 	return server
 }
 
