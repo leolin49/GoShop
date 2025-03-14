@@ -38,6 +38,10 @@ func NewSkiplist() *Skiplist {
 	}
 }
 
+func newErrorf(format string, a ...any) error {
+	return errors.New(fmt.Sprintf(format, a...))
+}
+
 func randomLevel() int {
 	lv := 1
 	for lv < MaxLevel && rand.Float64() < PFactor {
@@ -49,18 +53,18 @@ func randomLevel() int {
 // Exist reports whether the element is in the list.
 // If the element not in, Exist returns false.
 // Otherwise, Exist returns true.
-func (s *Skiplist) Exist(num int) bool {
+func (s *Skiplist) Exist(x int) bool {
 	s.Mu.RLock()
 	defer s.Mu.RUnlock()
 
 	cur := s.Head
 	for lv := s.Level - 1; lv >= 0; lv-- {
-		for cur.Next[lv] != nil && num > cur.Next[lv].Val {
+		for cur.Next[lv] != nil && x > cur.Next[lv].Val {
 			cur = cur.Next[lv]
 		}
 	}
 	cur = cur.Next[0]
-	return cur != nil && cur.Val == num
+	return cur != nil && cur.Val == x
 }
 
 // Insert inserts the element in the list.
@@ -213,6 +217,9 @@ func (s *Skiplist) Index(x int) (int, error) {
 // The rank of element means the reciprocal number of the element.
 // Rank and Index should satisfy Index(x) + Rank(x) is Len() + 2.
 func (s *Skiplist) Rank(x int) (int, error) {
+	s.Mu.RLock()
+	defer s.Mu.RUnlock()
+
 	idx, err := s.Index(x)
 	if err != nil {
 		return -1, err
@@ -220,26 +227,61 @@ func (s *Skiplist) Rank(x int) (int, error) {
 	return s.Len - idx + 1, nil
 }
 
-// First returns the first element in the list.
-func (s *Skiplist) First() (int, error) {
+// Min returns the minimum element in the list.
+func (s *Skiplist) Min() (int, error) {
 	return s.Kth(1)
 }
 
-// Last returns the last element in the list.
-func (s *Skiplist) Last() (int, error) {
+// Max returns the maximum element in the list.
+func (s *Skiplist) Max() (int, error) {
 	return s.Kth(s.Len)
 }
 
-// func (s *Skiplist) Lower() (int, error) {
-// }
+// Lower returns the first element in the list
+// which is greater than or equal to element x.
+func (s *Skiplist) Lower(x int) (int, error) {
+	s.Mu.RLock()
+	defer s.Mu.RUnlock()
 
-// func (s *Skiplist) Upper() (int, error) {
-// }
+	cur := s.Head
+	for lv := s.Level - 1; lv >= 0; lv-- {
+		for cur.Next[lv] != nil && x > cur.Next[lv].Val {
+			cur = cur.Next[lv]
+		}
+	}
+	cur = cur.Next[0]
+	if cur == nil {
+		return s.Len, newErrorf("no element greater than or equal to [%v]", x)
+	}
+	return cur.Val, nil
+}
+
+// Upper returns the first element in the list
+// which is greater to element x.
+func (s *Skiplist) Upper(x int) (int, error) {
+	s.Mu.RLock()
+	defer s.Mu.RUnlock()
+
+	cur := s.Head
+	for lv := s.Level - 1; lv >= 0; lv-- {
+		for cur.Next[lv] != nil && x >= cur.Next[lv].Val {
+			cur = cur.Next[lv]
+		}
+	}
+	cur = cur.Next[0]
+	if cur == nil {
+		return s.Len, newErrorf("no element greater to [%v]", x)
+	}
+	return cur.Val, nil
+}
 
 // Remove removes the element which Index() is index.
 func (s *Skiplist) Remove(index int) error {
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+
 	if index > s.Len {
-		return errors.New(fmt.Sprintf("index [%v] out of range in the list", index))
+		return newErrorf("index [%v] out of range in the list", index)
 	}
 	v, _ := s.Kth(index)
 	return s.Erase(v)
@@ -256,3 +298,4 @@ func (s *Skiplist) getKthElement(k int) *SkipListNode {
 	}
 	return cur
 }
+

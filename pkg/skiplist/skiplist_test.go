@@ -39,9 +39,9 @@ func TestSkipListGetKth(t *testing.T) {
 	val, _ = sl.Kth(7)
 	assert.Equal(t, 11, val)
 
-	val, _ = sl.First()
+	val, _ = sl.Min()
 	assert.Equal(t, 1, val)
-	val, _ = sl.Last()
+	val, _ = sl.Max()
 	assert.Equal(t, 15, val)
 }
 
@@ -86,6 +86,26 @@ func TestSkipListIndexRank(t *testing.T) {
 	assert.Equal(t, 8, rank)
 	rank, _ = sl.Rank(10)
 	assert.Equal(t, 3, rank)
+}
+
+func TestSkipListLowerUpper(t *testing.T) {
+	sl := NewSkiplist()
+
+	sl.Insert(3)
+	sl.Insert(1)
+	sl.Insert(10)
+	sl.Insert(8)
+	sl.Insert(4)
+	sl.Insert(6)
+	sl.Insert(11)
+	sl.Insert(15)
+	
+	x, _ := sl.Lower(4)
+	assert.Equal(t, 4, x)
+	x, _ = sl.Lower(5)
+	assert.Equal(t, 6, x)
+	x, _ = sl.Upper(9)
+	assert.Equal(t, 10, x)
 }
 
 func TestSkipListAll(t *testing.T) {
