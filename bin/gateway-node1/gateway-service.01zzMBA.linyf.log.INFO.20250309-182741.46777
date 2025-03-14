@@ -1,0 +1,14 @@
+Log file created at: 2025/03/09 18:27:41
+Running on machine: 01zzMBA
+Binary: Built with gc go1.23.4 for darwin/arm64
+Previous log: <none>
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0309 18:27:41.988586   46777 consul.go:51] [Consul] Service [gateway-service] register [gateway-service_node1, 10.255.103.106:8080] in consul center 127.0.0.1:8500
+I0309 18:27:41.990118   46777 login_client.go:54] [Gatewayserver] connect [login-service] server successful on:  10.255.103.106:49000
+I0309 18:27:41.999408   46777 checkout_client.go:38] [Gatewayserver] connect [checkout-service] server successful on:  10.255.103.106:49500
+I0309 18:27:42.001424   46777 cart_client.go:34] [Gatewayserver] connect [cart-service] server successful on:  10.255.103.106:49200
+I0309 18:27:42.002043   46777 stock_client.go:33] [Gatewayserver] connect [cart-service] server successful on:  10.255.103.106:49700
+I0309 18:27:42.003205   46777 auth_client.go:34] [GatewayServer] connect [auth-service] server successful on:  10.255.103.106:49300
+I0309 18:27:42.003546   46777 product_client.go:35] [Gatewayserver] connect [product-service] server successful on:  10.255.103.106:49100
+I0309 18:27:42.017764   46777 httpserver.go:30] [Gatewayserver] http server start on [0.0.0.0:8080]
+E0309 18:27:42.017949   46777 httpserver.go:25] [Gatewayserver] gin route run failed:  listen tcp 0.0.0.0:8080: bind: address already in use

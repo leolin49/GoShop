@@ -1,0 +1,19 @@
+Log file created at: 2025/03/09 18:27:38
+Running on machine: 01zzMBA
+Binary: Built with gc go1.23.4 for darwin/arm64
+Previous log: <none>
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+F0309 18:27:38.883017   46763 rpcserver.go:26] [OrderServer] rpcserver failed to listen: listen tcp 10.255.103.106:49600: bind: address already in use
+
+goroutine 1 [running]:
+github.com/golang/glog.Fatalf(...)
+	/Users/linyf/go/pkg/mod/github.com/golang/glog@v1.2.4/glog.go:690
+main.rpcServerStart(0x14000388008)
+	/Users/linyf/project/goshop/cmd/order-service/rpcserver.go:26 +0x11c
+main.(*OrderServer).Init(0x8?)
+	/Users/linyf/project/goshop/cmd/order-service/orderserver.go:63 +0x218
+goshop/pkg/service.(*Service).Main(0x1400000ca68)
+	/Users/linyf/project/goshop/pkg/service/service.go:56 +0x140
+main.main()
+	/Users/linyf/project/goshop/cmd/order-service/orderserver.go:121 +0x134
+

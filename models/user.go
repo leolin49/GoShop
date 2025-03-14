@@ -11,13 +11,14 @@ import (
 
 type User struct {
 	gorm.Model
-	Email       string
-	Name        string
-	Password    string
-	Age         uint8
-	Birthday    *time.Time
-	PhoneNumber *string // A pointer to a string, allowing for null values.
-	Address     *string
+	Email        string
+	Name         string
+	Password     string
+	PasswordSalt string
+	Age          uint8
+	Birthday     *time.Time
+	PhoneNumber  *string // A pointer to a string, allowing for null values.
+	Address      *string
 }
 
 func (u *User) TableName() string {
@@ -57,17 +58,17 @@ func NewUserQueryWithDBName(db *gorm.DB, dbName string) *UserQuery {
 	}
 }
 
-func (q *UserQuery) GetIdAndPwdByEmail(email string) (uint32, string, error) {
+func (q *UserQuery) GetIdAndPwdByEmail(email string) (uint32, string, string, error) {
 	var user User
-	err := q.db.Select("id, password").Where("email = ?", email).First(&user).Error
+	err := q.db.Select("id, password, password_salt").Where("email = ?", email).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return 0, "", errors.New("user not exist")
+			return 0, "", "", errors.New("user not exist")
 		} else {
-			return 0, "", err
+			return 0, "", "", err
 		}
 	}
-	return uint32(user.ID), user.Password, nil
+	return uint32(user.ID), user.Password, user.PasswordSalt, nil
 }
 
 func (q *UserQuery) GetUserIdByEmail(email string) (userId uint32, err error) {

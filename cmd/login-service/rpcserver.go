@@ -27,11 +27,12 @@ type LoginRpcService struct {
 func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegisterUser) (*loginpb.RspRegisterUser, error) {
 	var err error
 	// Create the user record.
-	Md5Pwd := util.MD5WithSaltFun(req.Password, nil)
+	Md5Pwd, salt := util.MD5WithSaltFunc(req.Password, nil)
 	user := &models.User{
-		Email:    req.Email,
-		Name:     req.Username,
-		Password: Md5Pwd,
+		Email:        req.Email,
+		Name:         req.Username,
+		Password:     Md5Pwd,
+		PasswordSalt: salt,
 	}
 	err = models.NewUserQuery(db).CreateUser(user)
 	if err != nil {
@@ -44,14 +45,14 @@ func (s *LoginRpcService) RegisterUser(ctx context.Context, req *loginpb.ReqRegi
 }
 
 func (s *LoginRpcService) LoginUser(ctx context.Context, req *loginpb.ReqLoginUser) (*loginpb.RspLoginUser, error) {
-	user_id, pwd, err := models.NewUserQueryRead(db).GetIdAndPwdByEmail(req.Email)
+	user_id, pwd, salt, err := models.NewUserQueryRead(db).GetIdAndPwdByEmail(req.Email)
 	if err != nil {
 		return &loginpb.RspLoginUser{
 			ErrorCode: errorcode.UnknowError,
 		}, err
 	}
 	// Check the password.
-	if req.Password != pwd {
+	if util.MD5Check(req.Password, salt, pwd) {
 		return &loginpb.RspLoginUser{
 			ErrorCode: errorcode.LoginPasswordError,
 		}, nil

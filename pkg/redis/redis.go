@@ -24,7 +24,7 @@ type IRdb interface {
 	GetProto(k string, v proto.Message) (bool, error)
 	RunScript(src string, keys []string, args []interface{}) (int, error)
 	Exec(args ...interface{}) *redis.Cmd
-	Lock(k string) (bool, error)
+	TryLock(k string) (bool, error)
 	LockFunc(k string, f func() (interface{}, error)) (interface{}, error)
 	UnLock(k string) bool
 }
@@ -122,7 +122,7 @@ func (r *Rdb) Exec(args ...interface{}) *redis.Cmd {
 	return r.db.Do(r.ctx, args)
 }
 
-func (r *Rdb) Lock(k string) (bool, error) {
+func (r *Rdb) TryLock(k string) (bool, error) {
 	res, err := r.Exec("SET", k, 1, "NX", "PX", 1000).Int()
 	if err != nil {
 		return false, err
@@ -131,7 +131,7 @@ func (r *Rdb) Lock(k string) (bool, error) {
 }
 
 func (r *Rdb) LockFunc(k string, f func() (interface{}, error)) (interface{}, error) {
-	locked, err := r.Lock(k)
+	locked, err := r.TryLock(k)
 	defer r.UnLock(k)
 	if err != nil {
 		return nil, err

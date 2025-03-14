@@ -1,0 +1,20 @@
+Log file created at: 2025/03/09 18:27:33
+Running on machine: 01zzMBA
+Binary: Built with gc go1.23.4 for darwin/arm64
+Previous log: <none>
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+F0309 18:27:33.665215   46742 rpcserver.go:21] [ProductServer] rpcserver failed to listen: listen tcp :49100: bind: address already in use
+
+goroutine 1 [running]:
+github.com/golang/glog.Fatalf(...)
+	/Users/linyf/go/pkg/mod/github.com/golang/glog@v1.2.4/glog.go:690
+main.rpcServerStart()
+	/Users/linyf/project/goshop/cmd/product-service/rpcserver.go:21 +0xb4
+main.(*ProductServer).Init(0x8?)
+	/Users/linyf/project/goshop/cmd/product-service/productserver.go:64 +0x218
+goshop/pkg/service.(*Service).Main(0x1400011ea38)
+	/Users/linyf/project/goshop/pkg/service/service.go:56 +0x140
+main.main()
+	/Users/linyf/project/goshop/cmd/product-service/productserver.go:126 +0x134
+
+I0309 18:27:33.677633   46742 service.go:50] [Service] Got signal  abort trap

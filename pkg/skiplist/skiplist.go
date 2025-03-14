@@ -3,8 +3,17 @@
 // license that can be found in the LICENSE file.
 
 // Package skiplist implements a skip list.
-//
 // Structure is thread concurrency safe.
+// 
+// SkipList, x present the dummy node.
+// |
+// x -> 1 ----------------> 8 -------------------> nil
+// |    |                   |
+// x -> 1 ------> 4 ------> 8 ----- -> 11 -------> nil
+// |    |         |         |          |
+// x -> 1 -> 3 -> 4 -> 6 -> 8 -> 10 -> 11 -> 15 -> nil
+// 
+
 
 package skiplist
 
@@ -24,7 +33,7 @@ import (
 type Comparator[T any] func(x, y T) int
 
 const (
-	MaxLevel = 32
+	MaxLevel = 128
 	PFactor  = 0.25
 )
 
@@ -53,6 +62,10 @@ func NewSkiplist[T cmp.Ordered]() *Skiplist[T] {
 		Len: 0,
 		Cmp: cmp.Compare[T],
 	}
+}
+
+func NewWithIntComparator() *Skiplist[int] {
+	return NewSkiplist[int]()
 }
 
 func newErrorf(format string, a ...any) error {
@@ -145,7 +158,7 @@ func (s *Skiplist[T]) Erase(x T) error {
 	}
 	cur = cur.Next[0]
 	if cur == nil || !s.equal(cur.Val, x) {
-		return errors.New(fmt.Sprintf("not element [%v] in the list", x))
+		return newErrorf("not element [%v] in the list", x)
 	}
 	for lv := 0; lv < s.Level; lv++ {
 		if update[lv].Next[lv] == cur {
@@ -182,7 +195,7 @@ func (s *Skiplist[T]) Kth(k int) (T, error) {
 
 	if k < 1 || k > s.Len {
 		var zero T
-		return zero, errors.New("[Skiplist] list have no such number node")
+		return zero, newErrorf("have no such number [%v] node", k)
 	}
 	node := s.getKthElement(k)
 	return node.Val, nil
@@ -198,7 +211,7 @@ func (s *Skiplist[T]) Range(l, r int) ([]T, error) {
 	defer s.Mu.RUnlock()
 
 	if l < 1 || r < 1 || l > s.Len || r > s.Len {
-		return nil, errors.New("[Skiplist] list have no such number node")
+		return nil, newErrorf("have no such number [%v] - [%v] node", l, r)
 	}
 	if l > r {
 		l, r = r, l

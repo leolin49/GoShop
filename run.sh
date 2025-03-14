@@ -32,7 +32,7 @@ main() {
 				run_all
 			elif [[ " ${SERVICES[@]} " =~ " $2 " ]]; then
 				stop_service "$2"
-				sleep 1
+				sleep 2
 				run_service "$2"
 			else
 				echo "Unknow service: $2"

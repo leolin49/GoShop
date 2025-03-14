@@ -1,0 +1,6 @@
+Log file created at: 2025/03/09 18:27:41
+Running on machine: 01zzMBA
+Binary: Built with gc go1.23.4 for darwin/arm64
+Previous log: <none>
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+E0309 18:27:41.001491   46773 httpserver.go:23] [TimeServer] gin route run failed:  listen tcp 10.255.103.106:49800: bind: address already in use
