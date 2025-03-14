@@ -6,15 +6,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func NewSkiplistWithTest[T int]() *Skiplist[int] {
+	sl := NewSkiplist[int]()
+	sl.Insert(3)
+	sl.Insert(1)
+	sl.Insert(10)
+	sl.Insert(8)
+	sl.Insert(4)
+	sl.Insert(6)
+	sl.Insert(11)
+	sl.Insert(15)
+	return sl
+}
+
 func TestSkipListEmpty(t *testing.T) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 	assert.True(t, sl.Empty())
 	sl.Insert(1)
 	assert.False(t, sl.Empty())
 }
 
 func TestSkipListLength(t *testing.T) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 	assert.Equal(t, 0, sl.Length())
 	sl.Insert(1)
 	assert.Equal(t, 1, sl.Length())
@@ -24,15 +37,7 @@ func TestSkipListLength(t *testing.T) {
 }
 
 func TestSkipListGetKth(t *testing.T) {
-	sl := NewSkiplist()
-	sl.Insert(3)
-	sl.Insert(1)
-	sl.Insert(10)
-	sl.Insert(8)
-	sl.Insert(4)
-	sl.Insert(6)
-	sl.Insert(11)
-	sl.Insert(15)
+	sl := NewSkiplistWithTest()
 	// the list should be: 1->3->4->6->8->10->11->15
 	val, _ := sl.Kth(4)
 	assert.Equal(t, 6, val)
@@ -46,15 +51,7 @@ func TestSkipListGetKth(t *testing.T) {
 }
 
 func TestSkipListGetRange(t *testing.T) {
-	sl := NewSkiplist()
-	sl.Insert(3)
-	sl.Insert(1)
-	sl.Insert(10)
-	sl.Insert(8)
-	sl.Insert(4)
-	sl.Insert(6)
-	sl.Insert(11)
-	sl.Insert(15)
+	sl := NewSkiplistWithTest()
 	// the list should be: 1->3->4->6->8->10->11->15
 	elements, _ := sl.Range(2, 6)
 	assert.Equal(t, []int{3, 4, 6, 8, 10}, elements)
@@ -63,15 +60,7 @@ func TestSkipListGetRange(t *testing.T) {
 }
 
 func TestSkipListIndexRank(t *testing.T) {
-	sl := NewSkiplist()
-	sl.Insert(3)
-	sl.Insert(1)
-	sl.Insert(10)
-	sl.Insert(8)
-	sl.Insert(4)
-	sl.Insert(6)
-	sl.Insert(11)
-	sl.Insert(15)
+	sl := NewSkiplistWithTest()
 	// the list should be: 1->3->4->6->8->10->11->15
 	idx, _ := sl.Index(3)
 	assert.Equal(t, 2, idx)
@@ -89,17 +78,8 @@ func TestSkipListIndexRank(t *testing.T) {
 }
 
 func TestSkipListLowerUpper(t *testing.T) {
-	sl := NewSkiplist()
+	sl := NewSkiplistWithTest()
 
-	sl.Insert(3)
-	sl.Insert(1)
-	sl.Insert(10)
-	sl.Insert(8)
-	sl.Insert(4)
-	sl.Insert(6)
-	sl.Insert(11)
-	sl.Insert(15)
-	
 	x, _ := sl.Lower(4)
 	assert.Equal(t, 4, x)
 	x, _ = sl.Lower(5)
@@ -109,7 +89,7 @@ func TestSkipListLowerUpper(t *testing.T) {
 }
 
 func TestSkipListAll(t *testing.T) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 
 	sl.Insert(3)
 	sl.Insert(1)

@@ -7,7 +7,7 @@ import (
 )
 
 func TestSkipListIter(t *testing.T) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 
 	sl.Insert(3)
 	sl.Insert(1)
@@ -24,4 +24,3 @@ func TestSkipListIter(t *testing.T) {
 	}
 	assert.Equal(t, []int{1, 3, 4, 6, 8, 10, 11, 15}, res)
 }
-

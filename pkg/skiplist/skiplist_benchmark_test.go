@@ -1,3 +1,11 @@
+// Copyright (c) 2025, Yufeng Lin. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package skiplist implements a skip list.
+//
+// Run the benchmark by `go test -bench=.` in package path.
+
 package skiplist
 
 import (
@@ -8,7 +16,7 @@ import (
 const ElementNum = 100000
 
 func BenchmarkSkipListKth(b *testing.B) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 	for range ElementNum {
 		x := rand.Int()
 		sl.Insert(x)
@@ -21,7 +29,7 @@ func BenchmarkSkipListKth(b *testing.B) {
 }
 
 func BenchmarkInsert(b *testing.B) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 	for range ElementNum {
 		x := rand.Int()
 		sl.Insert(x)
@@ -29,7 +37,7 @@ func BenchmarkInsert(b *testing.B) {
 }
 
 func BenchmarkErase(b *testing.B) {
-	sl := NewSkiplist()
+	sl := NewSkiplist[int]()
 	for range ElementNum {
 		x := rand.Int()
 		sl.Insert(x)
