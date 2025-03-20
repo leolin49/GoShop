@@ -14,7 +14,6 @@
 // x -> 1 -> 3 -> 4 -> 6 -> 8 -> 10 -> 11 -> 15 -> nil
 // 
 
-
 package skiplist
 
 import (
@@ -25,17 +24,17 @@ import (
 	"sync"
 )
 
+const (
+	MaxLevel = 128
+	PFactor  = 0.25
+)
+
 // Comparator returns
 //
 //	-1 if x is less than y,
 //	 0 if x equals y,
 //	+1 if x is greater than y.
 type Comparator[T any] func(x, y T) int
-
-const (
-	MaxLevel = 128
-	PFactor  = 0.25
-)
 
 type SkipListNode[T comparable] struct {
 	Val  T

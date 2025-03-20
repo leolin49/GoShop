@@ -4,6 +4,13 @@
 // 
 // Package skiplist implements a skip list.
 // 
+// Example Usage:
+// sl := NewSkipList()
+// for it := sl.NewIterator(); !it.End(); it = it.Next() {
+//     // do something...
+// }
+// 
+
 package skiplist
 
 type SkipListIterator[T comparable] struct {
@@ -33,5 +40,10 @@ func (it *SkipListIterator[T]) Value() T {
 }
 
 func (it *SkipListIterator[T]) HasNext() bool {
-	return it.p != nil
+	return it.p != nil && it.p.Next[0] != nil
 }
+
+func (it *SkipListIterator[T]) End() bool {
+	return it.p == nil
+}
+
