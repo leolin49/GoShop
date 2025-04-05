@@ -1,15 +1,15 @@
 // Copyright (c) 2025, Yufeng Lin. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-// 
+//
 // Package skiplist implements a skip list.
-// 
+//
 // Example Usage:
 // sl := NewSkipList()
 // for it := sl.NewIterator(); !it.End(); it = it.Next() {
 //     // do something...
 // }
-// 
+//
 
 package skiplist
 
@@ -46,4 +46,3 @@ func (it *SkipListIterator[T]) HasNext() bool {
 func (it *SkipListIterator[T]) End() bool {
 	return it.p == nil
 }
-

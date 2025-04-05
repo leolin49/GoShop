@@ -7,6 +7,7 @@ import (
 	"goshop/configs"
 	"goshop/pkg/util"
 	"strconv"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
@@ -24,6 +25,7 @@ type IRdb interface {
 	GetProto(k string, v proto.Message) (bool, error)
 	RunScript(src string, keys []string, args []interface{}) (int, error)
 	Exec(args ...interface{}) *redis.Cmd
+	Lock(k string) (bool, error)
 	TryLock(k string) (bool, error)
 	LockFunc(k string, f func() (interface{}, error)) (interface{}, error)
 	UnLock(k string) bool
@@ -122,7 +124,7 @@ func (r *Rdb) Exec(args ...interface{}) *redis.Cmd {
 	return r.db.Do(r.ctx, args)
 }
 
-func (r *Rdb) TryLock(k string) (bool, error) {
+func (r *Rdb) Lock(k string) (bool, error) {
 	res, err := r.Exec("SET", k, 1, "NX", "PX", 1000).Int()
 	if err != nil {
 		return false, err
@@ -130,15 +132,28 @@ func (r *Rdb) TryLock(k string) (bool, error) {
 	return res == 1, nil
 }
 
+func (r *Rdb) TryLock(k string) (bool, error) {
+	maxRetry := 5
+	interval := time.Second
+	for range maxRetry {
+		if ok, err := r.Lock(k); ok && err == nil {
+			return true, nil
+		}
+		time.Sleep(interval)
+		interval = time.Duration(float64(interval) * 1.5)
+	}
+	return false, errors.New("redis try lock failed")
+}
+
 func (r *Rdb) LockFunc(k string, f func() (interface{}, error)) (interface{}, error) {
 	locked, err := r.TryLock(k)
 	defer r.UnLock(k)
-	if err != nil {
+	if err != nil || !locked {
 		return nil, err
 	}
-	if !locked {
-		return nil, errors.New(fmt.Sprintf("lock [%s] is locked by others.", k))
-	}
+	// if !locked {
+	// 	return nil, errors.New(fmt.Sprintf("lock [%s] is locked by others.", k))
+	// }
 	return f()
 }
 

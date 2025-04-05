@@ -4,7 +4,7 @@
 
 // Package skiplist implements a skip list.
 // Structure is thread concurrency safe.
-// 
+//
 // SkipList, x present the dummy node.
 // |
 // x -> 1 ----------------> 8 -------------------> nil
@@ -12,7 +12,7 @@
 // x -> 1 ------> 4 ------> 8 ----- -> 11 -------> nil
 // |    |         |         |          |
 // x -> 1 -> 3 -> 4 -> 6 -> 8 -> 10 -> 11 -> 15 -> nil
-// 
+//
 
 package skiplist
 
@@ -68,7 +68,7 @@ func NewWithIntComparator() *Skiplist[int] {
 }
 
 func newErrorf(format string, a ...any) error {
-	return errors.New(fmt.Sprintf("skiplist: " + format, a...))
+	return errors.New(fmt.Sprintf("skiplist: "+format, a...))
 }
 
 func randomLevel() int {
