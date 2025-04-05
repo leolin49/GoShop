@@ -7,11 +7,11 @@
 //
 // SkipList, x present the dummy node.
 // |
-// x -> 1 ----------------> 8 -------------------> nil
-// |    |                   |
-// x -> 1 ------> 4 ------> 8 ----- -> 11 -------> nil
-// |    |         |         |          |
-// x -> 1 -> 3 -> 4 -> 6 -> 8 -> 10 -> 11 -> 15 -> nil
+// x -> 1(span 4) ----------------> 8 -------------------> nil
+// |    |                           |
+// x -> 1(span 2) ------> 4 ------> 8 ----- -> 11 -------> nil
+// |    |                 |         |          |
+// x -> 1(span 1) -> 3 -> 4 -> 6 -> 8 -> 10 -> 11 -> 15 -> nil
 //
 
 package skiplist
@@ -36,13 +36,13 @@ const (
 //	+1 if x is greater than y.
 type Comparator[T any] func(x, y T) int
 
-type SkipListNode[T comparable] struct {
+type SkipListNode[T any] struct {
 	Val  T
 	Span []int
 	Next []*SkipListNode[T]
 }
 
-type Skiplist[T comparable] struct {
+type Skiplist[T any] struct {
 	Len   int
 	Level int
 	Head  *SkipListNode[T]
@@ -51,6 +51,7 @@ type Skiplist[T comparable] struct {
 }
 
 // NewSkiplist returns a new empty sorted list.
+// This constructor only support built-in comparable type.
 func NewSkiplist[T cmp.Ordered]() *Skiplist[T] {
 	return &Skiplist[T]{
 		Level: 0,
@@ -60,6 +61,18 @@ func NewSkiplist[T cmp.Ordered]() *Skiplist[T] {
 		},
 		Len: 0,
 		Cmp: cmp.Compare[T],
+	}
+}
+
+func NewSkiplistWithCmp[T any](cmp Comparator[T]) *Skiplist[T] {
+	return &Skiplist[T]{
+		Level: 0,
+		Head: &SkipListNode[T]{
+			Next: make([]*SkipListNode[T], MaxLevel),
+			Span: make([]int, MaxLevel),
+		},
+		Len: 0,
+		Cmp: cmp,
 	}
 }
 
@@ -93,20 +106,25 @@ func (s *Skiplist[T]) Exist(x T) bool {
 		}
 	}
 	cur = cur.Next[0]
-	return cur != nil && cur.Val == x
+	return cur != nil && s.equal(cur.Val, x)
 }
 
 // Insert inserts the element in the list.
 func (s *Skiplist[T]) Insert(x T) {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
-
-	update := make([]*SkipListNode[T], MaxLevel)
-	rank := make([]int, MaxLevel)
+	var (
+		// update[i] maintains the node before the newNode at level i,
+		// which should be initial with the dummy head node.
+		update = make([]*SkipListNode[T], MaxLevel)
+		// rank[i] maintains the total number of node
+		// which update[i] had jumped, not include update[i] itself.
+		rank = make([]int, MaxLevel)
+		cur  = s.Head
+	)
 	for i := range update {
 		update[i] = s.Head
 	}
-	cur := s.Head
 	for lv := s.Level - 1; lv >= 0; lv-- {
 		if lv != s.Level-1 {
 			rank[lv] = rank[lv+1]
@@ -117,6 +135,7 @@ func (s *Skiplist[T]) Insert(x T) {
 		}
 		update[lv] = cur
 	}
+	// New the node that ready to insert.
 	level := randomLevel()
 	s.Level = max(s.Level, level)
 	newNode := &SkipListNode[T]{
@@ -125,9 +144,10 @@ func (s *Skiplist[T]) Insert(x T) {
 		Span: make([]int, level),
 	}
 	for i, node := range update[:level] {
+		// Insert the newNode after the update[i] in this level i.
 		newNode.Next[i] = node.Next[i]
 		node.Next[i] = newNode
-
+		// Update the span of this level.
 		newNode.Span[i] = node.Span[i] - (rank[0] - rank[i])
 		node.Span[i] = rank[0] - rank[i] + 1
 	}

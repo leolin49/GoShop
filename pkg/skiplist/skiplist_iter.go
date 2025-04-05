@@ -13,7 +13,7 @@
 
 package skiplist
 
-type SkipListIterator[T comparable] struct {
+type SkipListIterator[T any] struct {
 	p *SkipListNode[T]
 }
 
