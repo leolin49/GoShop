@@ -123,6 +123,10 @@ func (c *ConsulClient) ConfigRecover(configPath string) (*configs.Config, error)
 func (c *ConsulClient) ConfigQuery(configPath string) (*configs.Config, error) {
 	kv := c.Conn.KV()
 	data, _, err := kv.Get(configPath, nil)
+	if err != nil || data == nil {
+		glog.Errorln("[Consul] Failed to parse config file: ", err.Error())
+		return nil, err
+	}
 	var cfg configs.Config
 	if err = yaml.Unmarshal(data.Value, &cfg); err != nil {
 		glog.Errorln("[Consul] Failed to parse config file: ", err.Error())

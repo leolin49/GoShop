@@ -142,41 +142,40 @@ func TestSkipListAll(t *testing.T) {
 }
 
 type Person struct {
-	Name string
-	Age int
+	Name  string
+	Age   int
 	Score float64
 }
 
 func CompareByAge(a, b Person) int {
-    if a.Age < b.Age {
-        return -1
-    }
-    if a.Age > b.Age {
-        return 1
-    }
-    return 0
+	if a.Age < b.Age {
+		return -1
+	}
+	if a.Age > b.Age {
+		return 1
+	}
+	return 0
 }
 
 func TestSkipListStruct(t *testing.T) {
 	sl := NewSkiplistWithCmp(CompareByAge)
 	people := []Person{
-        {"Alice", 25, 88.5},
-        {"Bob", 30, 92.0},
-        {"Charlie", 22, 76.5},
-    }
+		{"Alice", 25, 88.5},
+		{"Bob", 30, 92.0},
+		{"Charlie", 22, 76.5},
+	}
 	for _, p := range people {
 		sl.Insert(p)
-	}    
+	}
 	// 查询年龄最小的人
-    youngest, _ := sl.Min()
+	youngest, _ := sl.Min()
 	assert.Equal(t, 22, youngest.Age, "[SkipList] get element error")
 
-    // 查找年龄>=25的人
-    p, _ := sl.Lower(Person{Age: 25})
+	// 查找年龄>=25的人
+	p, _ := sl.Lower(Person{Age: 25})
 	assert.Equal(t, 25, p.Age, "[SkipList] get element error")
 
-    // 查找年龄>25的人
-    p, _ = sl.Upper(Person{Age: 25})
+	// 查找年龄>25的人
+	p, _ = sl.Upper(Person{Age: 25})
 	assert.Equal(t, 30, p.Age, "[SkipList] get element error")
 }
-

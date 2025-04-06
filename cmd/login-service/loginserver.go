@@ -117,8 +117,7 @@ func main() {
 		_ = consul.ServiceDeregister(serverName)
 		glog.Flush()
 	}()
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
 
