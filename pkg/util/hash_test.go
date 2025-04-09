@@ -1,10 +1,8 @@
 package util
 
 import (
-	"fmt"
 	"net/url"
 	"testing"
-	// "github.com/stretchr/testify/assert"
 )
 
 func TestShortUrl(t *testing.T) {
@@ -18,6 +16,7 @@ func TestShortUrl(t *testing.T) {
 		path = path[1:]
 	}
 	hashVal := HashMurmur32(path)
-	shortPath := DecToHex(int(hashVal))
-	fmt.Println(parsedUrl.Host + "/" + shortPath)
+	// shortPath := base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(int(hashVal))))
+	shortPath := Base62(int(hashVal))
+	t.Log(parsedUrl.Host + "/" + shortPath)
 }

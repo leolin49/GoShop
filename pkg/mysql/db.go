@@ -1,14 +1,23 @@
 package mysql
 
 import (
+	"database/sql"
 	"fmt"
 	"goshop/configs"
+	"time"
 
 	"github.com/golang/glog"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
 )
+
+type ConnectionPoolConfig struct {
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifeTime time.Duration
+	ConnMaxIdleTime time.Duration
+}
 
 func DatabaseInit(cfg *configs.MySQLConfig) (db *gorm.DB, err error) {
 	dbconn, err := gorm.Open(mysql.New(mysql.Config{
@@ -55,6 +64,17 @@ func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
 		glog.Errorln("[Mysql] cluster master init failed: ", err.Error())
 		return nil, err
 	}
+	sqldb, err := db.DB()
+	if err != nil {
+		glog.Errorln("[Mysql] cluster master init failed: ", err.Error())
+		return nil, err
+	}
+	setConnectionPool(sqldb, &ConnectionPoolConfig{
+		MaxOpenConns:    20,
+		MaxIdleConns:    5,
+		ConnMaxLifeTime: 2 * time.Hour,
+		ConnMaxIdleTime: 30 * time.Minute,
+	})
 
 	for _, repl := range replicas {
 		replicaDSN := repl.GetDSN()
@@ -79,7 +99,29 @@ func DBClusterInit(cfg *configs.MySQLClusterConfig) (*gorm.DB, error) {
 		glog.Errorln("[Mysql] cluster replicas init failed: ", err.Error())
 		return nil, err
 	}
+
+	if len(replicasDialectors) > 0 {
+		resolverDb, err := db.DB()
+		if err != nil {
+			glog.Errorln("[Mysql] cluster replicas init failed: ", err.Error())
+			return nil, err
+		}
+		setConnectionPool(resolverDb, &ConnectionPoolConfig{
+			MaxOpenConns:    50,
+			MaxIdleConns:    10,
+			ConnMaxLifeTime: 2 * time.Hour,
+			ConnMaxIdleTime: 30 * time.Minute,
+		})
+	}
+
 	glog.Infof("[Mysql] cluster init success: Master=[%s], Replicas=[%v]\n", masterDSN, replicaDSNs)
 
 	return db, nil
+}
+
+func setConnectionPool(db *sql.DB, cfg *ConnectionPoolConfig) {
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
+	db.SetConnMaxLifetime(cfg.ConnMaxLifeTime)
+	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 }
